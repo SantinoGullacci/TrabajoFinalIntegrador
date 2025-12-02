@@ -47,6 +47,28 @@ Appointment.belongsTo(User);
 Service.hasMany(Appointment);
 Appointment.belongsTo(Service);
 
+const {Product, Order, OrderItem } = sequelize.models; // <--- Agrega Order y OrderItem
+
+
+// --- RELACIONES DE TURNOS ---
+User.hasMany(Appointment);
+Appointment.belongsTo(User);
+Service.hasMany(Appointment);
+Appointment.belongsTo(Service);
+
+// --- RELACIONES DE VENTAS (NUEVO) ---
+// 1. Un Usuario tiene muchas Compras
+User.hasMany(Order);
+Order.belongsTo(User);
+
+// 2. Una Compra tiene muchos Items (Detalles)
+Order.hasMany(OrderItem);
+OrderItem.belongsTo(Order);
+
+// 3. Un Item pertenece a un Producto
+Product.hasMany(OrderItem);
+OrderItem.belongsTo(Product);
+
 module.exports = {
   ...sequelize.models,
   conn: sequelize,

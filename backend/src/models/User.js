@@ -1,9 +1,10 @@
 const { DataTypes } = require('sequelize');
+const bcrypt = require('bcryptjs'); // Importamos la librería de encriptación
 
 module.exports = (sequelize) => {
-  sequelize.define('User', {
+  const User = sequelize.define('User', {
     id: {
-      type: DataTypes.UUID, // Usamos ID alfanumérico único para seguridad
+      type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
@@ -14,14 +15,14 @@ module.exports = (sequelize) => {
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true, // No puede haber dos usuarios con el mismo email
+      unique: true,
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     role: {
-      type: DataTypes.ENUM('admin', 'client'), // Solo permite estos dos valores
+      type: DataTypes.ENUM('admin', 'client'),
       defaultValue: 'client',
     },
     phone: {
@@ -29,4 +30,12 @@ module.exports = (sequelize) => {
       allowNull: true,
     }
   }, { timestamps: false });
+
+  // HOOK: Antes de crear el usuario, encriptamos la contraseña
+  User.beforeCreate(async (user) => {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
+  });
+
+  return User;
 };
