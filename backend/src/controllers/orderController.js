@@ -1,28 +1,28 @@
 const { Order, OrderItem, Product } = require('../db');
 
 const createOrder = async (req, res) => {
-    const { userId, items, total } = req.body; 
-    // items es un array: [{ productId: 1, quantity: 2, price: 1500 }, ...]
+    // Recibimos userId O clientName
+    const { userId, clientName, items, total } = req.body; 
 
     try {
-        // 1. Validar Stock antes de vender nada
+        // 1. Validar Stock
         for (const item of items) {
             const product = await Product.findByPk(item.productId);
             if (!product || product.stock < item.quantity) {
-                return res.status(400).json({ error: `Sin stock suficiente para: ${product?.name || 'Producto'}` });
+                return res.status(400).json({ error: `Sin stock suficiente para: ${product?.name}` });
             }
         }
 
         // 2. Crear la Orden (Cabecera)
         const newOrder = await Order.create({
-            UserId: userId,
+            UserId: userId || null,         // Si es null, Sequelize lo deja pasar
+            clientName: clientName || null, // Guardamos el nombre del físico
             total: total,
             status: 'completed'
         });
 
-        // 3. Crear los Detalles y RESTAR Stock
+        // 3. Crear Detalles y RESTAR Stock (Esto sigue igual)
         for (const item of items) {
-            // Guardamos el detalle
             await OrderItem.create({
                 OrderId: newOrder.id,
                 ProductId: item.productId,
@@ -30,13 +30,12 @@ const createOrder = async (req, res) => {
                 price: item.price
             });
 
-            // Restamos del inventario
             const product = await Product.findByPk(item.productId);
             product.stock = product.stock - item.quantity;
             await product.save();
         }
 
-        res.status(201).json({ message: "Compra realizada con éxito", orderId: newOrder.id });
+        res.status(201).json({ message: "Compra realizada", orderId: newOrder.id });
 
     } catch (error) {
         console.error(error);

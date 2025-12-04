@@ -18,6 +18,15 @@ module.exports = (sequelize) => {
     status: {
       type: DataTypes.ENUM('pending', 'confirmed', 'cancelled'),
       defaultValue: 'pending',
+    },
+    clientName: { 
+      type: DataTypes.STRING,
+      allowNull: true, // Puede estar vacío si es un usuario registrado
     }
   }, { timestamps: true }); // timestamps: true agrega "createdAt" y "updatedAt" automáticamente
+  
+
+
+
+
 };

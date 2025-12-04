@@ -9,17 +9,40 @@ import ServiceManager from './components/ServiceManager';
 import ProductManager from './components/ProductManager'
 import Shop from './components/Shop'; 
 import AdminStats from './components/AdminStats';
+import SalesForm from './components/SalesForm';
 
 // --- COMPONENTE DASHBOARD ---
 function Dashboard() {
   const { user, logout } = useAuth();
   const [appointments, setAppointments] = useState<any[]>([]);
 
-  // (Mantén aquí tu función fetchAppointments y el useEffect...)
+  // 1. ESTADO "GATILLO": Cada vez que este número cambia, las stats se recargan
+  const [statsTrigger, setStatsTrigger] = useState(0);
+
+  // 2. FUNCIÓN PARA DISPARAR LA RECARGA
+  const refreshStats = () => {
+    setStatsTrigger(prev => prev + 1);
+  };
+
   const fetchAppointments = () => {
       fetch('http://localhost:3001/appointments')
-        .then((res) => res.json())
-        .then((data) => setAppointments(data));
+        .then((res) => {
+            if (!res.ok) throw new Error("Error en el servidor");
+            return res.json();
+        })
+        .then((data) => {
+            // SEGURIDAD: Solo guardamos si es una lista (Array) real
+            if (Array.isArray(data)) {
+                setAppointments(data);
+            } else {
+                console.error("Formato de datos incorrecto:", data);
+                setAppointments([]); 
+            }
+        })
+        .catch(err => {
+            console.error("Error cargando turnos:", err);
+            setAppointments([]); // En caso de error, lista vacía para no romper la pantalla
+        });
   };
   useEffect(() => { fetchAppointments(); }, []);
 
@@ -40,35 +63,35 @@ function Dashboard() {
       {/* --- ZONA EXCLUSIVA DE ADMIN --- */}
       {user?.role === 'admin' && (
         <>
-          {/* 1. Las Estadísticas van PRIMERO */}
-          <AdminStats />
+          {/* 3. LE PASAMOS EL GATILLO AL COMPONENTE DE ESTADÍSTICAS */}
+          <AdminStats refreshTrigger={statsTrigger} />
           
-          {/* 2. Luego los gestores */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
-             {/* Puse los gestores en una grilla para que se vea más ordenado, si quieres */}
              <ServiceManager />
-             <ProductManager />
+             
+             {/* 4. LE PASAMOS LA FUNCIÓN DE RECARGA AL GESTOR DE PRODUCTOS */}
+             <ProductManager onUpdate={refreshStats} />
           </div>
         </>
       )}
       
-      {/* Formulario de Turnos (Visible para todos, pero con comportamiento distinto) */}
       <AppointmentForm onAppointmentCreated={fetchAppointments} />
-      
-      <hr style={{ margin: '30px 0' }} />
-
-      {/* COMPONENTE TIENDA (NUEVO) */}
-      <Shop /> 
+      {/* AQUÍ AGREGAMOS EL FORMULARIO DE VENTAS NUEVO */}
+             <div style={{ flex: 1 }}>
+                <SalesForm onSaleCompleted={refreshStats} />
+             </div>
       
       <hr style={{ margin: '30px 0' }} />
       
       <h2>📅 Mis Turnos</h2>
-      {/* (Mantén aquí tu lista de turnos...) */}
       <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
         {appointments.map((appt) => (
           <div key={appt.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', background: '#fff' }}>
              <h3>📅 {appt.date} - {appt.time}</h3>
-             <p><strong>Cliente:</strong> {appt.User?.name}</p>
+             
+             {/* --- CAMBIO AQUÍ: Muestra User.name SI EXISTE, sino muestra clientName --- */}
+             <p><strong>Cliente:</strong> {appt.User?.name || appt.clientName || 'Anónimo'}</p>
+             
              <p><strong>Servicio:</strong> {appt.Service?.name || 'Eliminado'}</p>
           </div>
         ))}
@@ -77,12 +100,12 @@ function Dashboard() {
     </div>
   );
 }
+
 // --- PROTECTOR DE RUTAS ---
-// CAMBIO AQUÍ: Usamos ReactNode en lugar de JSX.Element
 function ProtectedRoute({ children }: PropsWithChildren) {
   const { isAuthenticated, loading } = useAuth();
 
-  if (loading) return <div>Cargando sesión...</div>; // <--- ESPERA AQUÍ
+  if (loading) return <div>Cargando sesión...</div>;
 
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 }

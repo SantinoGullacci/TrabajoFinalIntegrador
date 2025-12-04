@@ -3,18 +3,26 @@ const { Appointment, User, Service } = require('../db');
 // Crear un nuevo turno
 const createAppointment = async (req, res) => {
     try {
-        const { date, time, UserId, ServiceId } = req.body;
+        // Recibimos userId O clientName
+        const { date, time, UserId, ServiceId, clientName } = req.body;
 
-        if (!date || !time || !UserId || !ServiceId) {
-            return res.status(400).json({ error: "Faltan datos (fecha, hora, usuario o servicio)" });
+        // Validamos que haya fecha, hora y servicio
+        if (!date || !time || !ServiceId) {
+            return res.status(400).json({ error: "Faltan datos (fecha, hora o servicio)" });
+        }
+
+        // Validamos que haya AL MENOS UN cliente (Registrado o Físico)
+        if (!UserId && !clientName) {
+            return res.status(400).json({ error: "Debes indicar un Usuario registrado o un Nombre de cliente físico" });
         }
 
         // Creamos el turno
         const newAppointment = await Appointment.create({
             date,
             time,
-            UserId,     // Sequelize espera este nombre exacto por la relación
-            ServiceId   // Sequelize espera este nombre exacto por la relación
+            UserId: UserId || null,       // Si no hay ID, mandamos null
+            clientName: clientName || null, // Si no hay nombre físico, mandamos null
+            ServiceId
         });
 
         res.status(201).json(newAppointment);
