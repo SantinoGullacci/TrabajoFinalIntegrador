@@ -8,6 +8,7 @@ import './App.css';
 import ServiceManager from './components/ServiceManager';
 import ProductManager from './components/ProductManager'
 import Shop from './components/Shop'; 
+import AdminStats from './components/AdminStats';
 
 // --- COMPONENTE DASHBOARD ---
 function Dashboard() {
@@ -39,8 +40,15 @@ function Dashboard() {
       {/* --- ZONA EXCLUSIVA DE ADMIN --- */}
       {user?.role === 'admin' && (
         <>
-          <ServiceManager />
-          <ProductManager />
+          {/* 1. Las Estadísticas van PRIMERO */}
+          <AdminStats />
+          
+          {/* 2. Luego los gestores */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+             {/* Puse los gestores en una grilla para que se vea más ordenado, si quieres */}
+             <ServiceManager />
+             <ProductManager />
+          </div>
         </>
       )}
       

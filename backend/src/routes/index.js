@@ -5,6 +5,7 @@ const { Service } = require('../db');
 const { register, login } = require('../controllers/authController');
 const { getProducts, createProduct, deleteProduct, updateStock } = require('../controllers/productController');
 const { createOrder, getOrdersByUser } = require('../controllers/orderController');
+const { getAdminStats } = require('../controllers/statsController');
 
 const router = Router();
 
@@ -38,6 +39,7 @@ router.delete('/services/:id', async (req, res) => {
     }
 });
 
+
 router.post('/appointments', createAppointment);
 router.get('/appointments', getAppointments);
 
@@ -49,5 +51,8 @@ router.put('/products/:id', updateStock); // Para editar stock
 
 router.post('/orders', createOrder); // Crear compra
 router.get('/orders/:userId', getOrdersByUser); // Ver mis compras
+
+// RUTA DE REPORTES
+router.get('/reports/stats', getAdminStats);
 
 module.exports = router;
