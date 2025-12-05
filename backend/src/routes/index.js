@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { getUsers } = require('../controllers/userController');
-const { createAppointment, getAppointments } = require('../controllers/appointmentController');
+const { createAppointment, getAppointments, updateAppointment } = require('../controllers/appointmentController');
 // ERROR 1 CORREGIDO: Agregamos Product aquí abajo
 const { Service, Product } = require('../db'); 
 const { register, login } = require('../controllers/authController');
@@ -66,6 +66,8 @@ router.delete('/services/:id', async (req, res) => {
 // --- RUTAS DE TURNOS ---
 router.post('/appointments', createAppointment);
 router.get('/appointments', getAppointments);
+router.put('/appointments/:id', updateAppointment);
+
 
 // --- RUTAS DE PRODUCTOS ---
 router.get('/products', getProducts);

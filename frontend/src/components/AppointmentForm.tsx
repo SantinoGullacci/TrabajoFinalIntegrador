@@ -4,50 +4,50 @@ import { useAuth } from '../context/AuthContext';
 interface User { id: string; name: string; }
 interface Service { id: number; name: string; price: number; }
 
-export default function AppointmentForm({ onAppointmentCreated }: { onAppointmentCreated: () => void }) {
+// 1. Recibimos refreshTrigger
+export default function AppointmentForm({ onAppointmentCreated, refreshTrigger = 0 }: { onAppointmentCreated: () => void, refreshTrigger?: number }) {
   const { user } = useAuth();
   
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  
-  // Estados para selección de cliente
-  const [clientName, setClientName] = useState(''); // Nombre para buscar O para cliente físico
-  const [isGuest, setIsGuest] = useState(false); // <--- NUEVO: Checkbox estado
-  
+  const [clientName, setClientName] = useState(''); 
+  const [isGuest, setIsGuest] = useState(false); 
   const [serviceId, setServiceId] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [services, setServices] = useState<Service[]>([]);
 
+  // 2. Agregamos refreshTrigger al useEffect para recargar la lista de servicios
   useEffect(() => {
     if (user?.role === 'admin') {
       fetch('http://localhost:3001/users').then(res => res.json()).then(data => setUsers(data));
     }
     fetch('http://localhost:3001/services').then(res => res.json()).then(data => setServices(data));
-  }, [user]);
+  }, [user, refreshTrigger]); // <--- ¡AQUÍ ESTÁ LA CLAVE!
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let payload: any = {
-      date,
-      time,
-      ServiceId: serviceId
-    };
+    const selectedDate = new Date(`${date}T${time}`);
+    const now = new Date();
+    const day = selectedDate.getDay(); 
+    const hour = parseInt(time.split(':')[0]);
 
-    // LÓGICA: ¿Es Admin agendando?
+    if (selectedDate < now) return alert('❌ Error: Fecha pasada.');
+    if (day === 0 || day === 1) return alert('❌ Cerrado Domingos y Lunes.');
+    if (hour < 9 || hour >= 18) return alert('❌ Horario de 09:00 a 18:00 hs.');
+
+    let payload: any = { date, time, ServiceId: serviceId };
+
     if (user?.role === 'admin') {
       if (isGuest) {
-        // CASO 1: Cliente Físico (sin ID)
         payload.clientName = clientName; 
         payload.UserId = null;
       } else {
-        // CASO 2: Cliente Registrado (buscamos su ID)
         const selectedUser = users.find(u => u.name.toLowerCase() === clientName.toLowerCase());
-        if (!selectedUser) return alert('Usuario registrado no encontrado. ¿Querías usar "Cliente sin cuenta"?');
+        if (!selectedUser) return alert('Usuario no encontrado. ¿Querías usar "Cliente sin cuenta"?');
         payload.UserId = selectedUser.id;
       }
     } else {
-      // CASO 3: Cliente auto-agendándose
       payload.UserId = user?.id;
     }
 
@@ -60,7 +60,6 @@ export default function AppointmentForm({ onAppointmentCreated }: { onAppointmen
       if (response.ok) {
         alert('✅ Turno reservado');
         onAppointmentCreated();
-        // Limpiar campos
         setDate(''); setTime(''); setClientName(''); setIsGuest(false);
       } else {
         const err = await response.json();
@@ -74,42 +73,17 @@ export default function AppointmentForm({ onAppointmentCreated }: { onAppointmen
       <h3>📅 {user?.role === 'admin' ? 'Agendar Turno (Admin)' : `Hola ${user?.name}, reserva tu turno`}</h3>
       
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '300px' }}>
-        
-        {/* LOGICA DE ADMIN: Buscador o Input libre */}
         {user?.role === 'admin' && (
           <div style={{ background: '#333', padding: '10px', borderRadius: '5px', marginBottom: '10px' }}>
-            
             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '10px', color: '#17a2b8' }}>
-              <input 
-                type="checkbox" 
-                checked={isGuest} 
-                onChange={(e) => { setIsGuest(e.target.checked); setClientName(''); }} 
-              />
-              Cliente sin cuenta
+              <input type="checkbox" checked={isGuest} onChange={(e) => { setIsGuest(e.target.checked); setClientName(''); }} /> Cliente sin cuenta
             </label>
-
             <label>Nombre del Cliente:</label>
             {isGuest ? (
-              // INPUT LIBRE (Para Juan Perez que pasó por la calle)
-              <input 
-                type="text" 
-                value={clientName} 
-                onChange={(e) => setClientName(e.target.value)} 
-                placeholder="Ej: Cliente de paso..." 
-                required 
-                style={{ padding: '8px', width: '93%' }}
-              />
+              <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Ej: Cliente de paso..." required style={{ padding: '8px', width: '93%' }} />
             ) : (
-              // BUSCADOR (Para usuarios registrados)
               <>
-                <input 
-                  list="user-options" 
-                  value={clientName} 
-                  onChange={(e) => setClientName(e.target.value)} 
-                  placeholder="Buscar usuario registrado..." 
-                  required 
-                  style={{ padding: '8px', width: '93%' }}
-                />
+                <input list="user-options" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Buscar usuario..." required style={{ padding: '8px', width: '93%' }} />
                 <datalist id="user-options">{users.map(u => <option key={u.id} value={u.name} />)}</datalist>
               </>
             )}
@@ -123,13 +97,11 @@ export default function AppointmentForm({ onAppointmentCreated }: { onAppointmen
         </select>
 
         <label>Fecha:</label>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required style={{ padding: '8px' }} />
+        <input type="date" value={date} min={new Date().toISOString().split('T')[0]} onChange={(e) => setDate(e.target.value)} required style={{ padding: '8px' }} />
         <label>Hora:</label>
-        <input type="time" value={time} onChange={(e) => setTime(e.target.value)} required style={{ padding: '8px' }} />
+        <input type="time" value={time} min="09:00" max="18:00" onChange={(e) => setTime(e.target.value)} required style={{ padding: '8px' }} />
 
-        <button type="submit" style={{ marginTop: '10px', padding: '10px', background: '#4CAF50', color: 'white', border: 'none', cursor: 'pointer', fontSize: '16px', borderRadius: '5px' }}>
-          Confirmar Reserva
-        </button>
+        <button type="submit" style={{ marginTop: '10px', padding: '10px', background: '#4CAF50', color: 'white', border: 'none', cursor: 'pointer', fontSize: '16px', borderRadius: '5px' }}>Confirmar Reserva</button>
       </form>
     </div>
   );
