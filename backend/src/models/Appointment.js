@@ -8,25 +8,21 @@ module.exports = (sequelize) => {
       autoIncrement: true,
     },
     date: {
-      type: DataTypes.DATEONLY, // Formato AAAA-MM-DD
+      type: DataTypes.DATEONLY,
       allowNull: false,
     },
     time: {
-      type: DataTypes.TIME, // Formato HH:MM:SS
+      type: DataTypes.TIME,
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM('pending', 'confirmed', 'cancelled'),
+      // AQUÍ ESTABA EL ERROR: Faltaba agregar 'completed' a la lista
+      type: DataTypes.ENUM('pending', 'confirmed', 'cancelled', 'completed'), 
       defaultValue: 'pending',
     },
     clientName: { 
       type: DataTypes.STRING,
-      allowNull: true, // Puede estar vacío si es un usuario registrado
+      allowNull: true, 
     }
-  }, { timestamps: true }); // timestamps: true agrega "createdAt" y "updatedAt" automáticamente
-  
-
-
-
-
+  }, { timestamps: true });
 };

@@ -37,6 +37,13 @@ export default function AdminStats({ refreshTrigger }: AdminStatsProps) {
     minWidth: '200px'
   };
 
+  // Si stats es null, o si vino con error (porque el backend falló)
+  if (!stats || (stats as any).error) {
+     return <div style={{padding: 20, color: 'red'}}>⚠️ Error cargando estadísticas. Revisa la consola del servidor.</div>;
+  }
+
+  // ... aquí sigue tu return normal con los gráficos ...
+
   return (
     <div style={{ marginBottom: '40px' }}>
       <h2 style={{ borderLeft: '5px solid #007bff', paddingLeft: '10px' }}>📊 Panel de Control</h2>

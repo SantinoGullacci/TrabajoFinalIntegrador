@@ -81,37 +81,62 @@ const getAppointments = async (req, res) => {
     }
 };
 
-// EDITAR TURNO (PUT)
+// EDITAR TURNO (PUT) - CON LÓGICA DE CANCELACIÓN
 const updateAppointment = async (req, res) => {
     try {
         const { id } = req.params;
-        const { date, time } = req.body; // Solo permitimos cambiar fecha y hora
+        // Recibimos 'requestingRole' desde el front para saber quién pide cancelar
+        const { date, time, status, requestingRole } = req.body; 
 
         const appointment = await Appointment.findByPk(id);
         if (!appointment) return res.status(404).json({ error: "Turno no encontrado" });
 
-        // --- REPETIMOS LAS VALIDACIONES DE REGLAS DE NEGOCIO ---
-        const appointmentDate = new Date(`${date}T${time}`);
-        const now = new Date();
-        const dayOfWeek = appointmentDate.getDay();
-        const hour = parseInt(time.split(':')[0]);
+        // --- LÓGICA DE CANCELACIÓN (NUEVO) ---
+        if (status === 'cancelled') {
+            // 1. Calculamos la fecha del turno
+            const appointmentDate = new Date(`${appointment.date}T${appointment.time}`);
+            const now = new Date();
+            
+            // 2. Calculamos la diferencia en horas
+            const diffInMs = appointmentDate - now;
+            const diffInHours = diffInMs / (1000 * 60 * 60);
 
-        if (appointmentDate < now) {
-            return res.status(400).json({ error: "❌ La fecha ya pasó." });
-        }
-        if (dayOfWeek === 0 || dayOfWeek === 1) {
-            return res.status(400).json({ error: "❌ Cerrado Domingos y Lunes." });
-        }
-        if (hour < 9 || hour >= 18) {
-            return res.status(400).json({ error: "❌ Horario: 09:00 a 18:00 hs." });
-        }
-        // -------------------------------------------------------
+            // 3. Regla: Si falta menos de 24hs Y NO ES ADMIN, error.
+            if (diffInHours < 24 && requestingRole !== 'admin') {
+                return res.status(400).json({ error: "❌ Los clientes solo pueden cancelar con 24hs de anticipación." });
+            }
 
-        // Actualizamos
-        appointment.date = date;
-        appointment.time = time;
+            appointment.status = 'cancelled';
+            await appointment.save();
+            return res.json({ message: "Turno cancelado correctamente", appointment });
+        }
+        
+        // --- LÓGICA DE COMPLETAR (COBRAR) ---
+        if (status === 'completed') {
+            appointment.status = status;
+            await appointment.save();
+            return res.json({ message: "Estado actualizado", appointment });
+        }
+
+        // --- VALIDACIONES DE EDICIÓN DE FECHA (Lo que ya tenías) ---
+        if (date || time) {
+            const newDate = date || appointment.date;
+            const newTime = time || appointment.time;
+
+            const appointmentDate = new Date(`${newDate}T${newTime}`);
+            const now = new Date();
+            const dayOfWeek = appointmentDate.getDay();
+            const hour = parseInt(newTime.split(':')[0]);
+
+            if (appointmentDate < now) return res.status(400).json({ error: "❌ La fecha ya pasó." });
+            if (dayOfWeek === 0 || dayOfWeek === 1) return res.status(400).json({ error: "❌ Cerrado Domingos y Lunes." });
+            if (hour < 9 || hour >= 18) return res.status(400).json({ error: "❌ Horario: 09:00 a 18:00 hs." });
+
+            appointment.date = newDate;
+            appointment.time = newTime;
+        }
+
         await appointment.save();
-
         res.json({ message: "Turno actualizado", appointment });
     } catch (error) {
         res.status(500).json({ error: error.message });

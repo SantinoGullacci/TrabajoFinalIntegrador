@@ -35,37 +35,22 @@ let capsEntries = entries.map((entry) => [entry[0][0].toUpperCase() + entry[0].s
 sequelize.models = Object.fromEntries(capsEntries);
 
 // --- ZONA DE RELACIONES ---
-// Obtenemos los modelos (UNA SOLA VEZ)
-const { User, Service, Appointment } = sequelize.models;
+const { User, Service, Appointment, Product, Order, OrderItem } = sequelize.models;
 
-// Definimos las relaciones
-// Un Usuario puede tener muchos turnos
+// 1. Relaciones de Turnos
 User.hasMany(Appointment);
 Appointment.belongsTo(User);
 
-// Un Servicio puede estar en muchos turnos
 Service.hasMany(Appointment);
 Appointment.belongsTo(Service);
 
-const {Product, Order, OrderItem } = sequelize.models; // <--- Agrega Order y OrderItem
-
-
-// --- RELACIONES DE TURNOS ---
-User.hasMany(Appointment);
-Appointment.belongsTo(User);
-Service.hasMany(Appointment);
-Appointment.belongsTo(Service);
-
-// --- RELACIONES DE VENTAS (NUEVO) ---
-// 1. Un Usuario tiene muchas Compras
+// 2. Relaciones de Ventas
 User.hasMany(Order);
 Order.belongsTo(User);
 
-// 2. Una Compra tiene muchos Items (Detalles)
 Order.hasMany(OrderItem);
 OrderItem.belongsTo(Order);
 
-// 3. Un Item pertenece a un Producto
 Product.hasMany(OrderItem);
 OrderItem.belongsTo(Product);
 

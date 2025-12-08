@@ -1,29 +1,41 @@
-const { Order, Appointment, Product } = require('../db');
-const { Op } = require('sequelize'); // Importamos operadores lógicos
+const { Order, Appointment, Product, Service } = require('../db'); // <--- Importamos Service
+const { Op } = require('sequelize');
 
 const getAdminStats = async (req, res) => {
     try {
-        // 1. Calcular dinero total recaudado (Suma la columna 'total' de Orders)
-        const totalSales = await Order.sum('total') || 0;
+        // 1. Dinero de PRODUCTOS (Ventas)
+        const totalProductSales = await Order.sum('total') || 0;
 
-        // 2. Contar cantidad total de turnos
-        const totalAppointments = await Appointment.count();
-
-        // 3. Contar turnos pendientes (Opcional, pero útil)
-        const pendingAppointments = await Appointment.count({
-            where: { status: 'pending' }
+        // 2. Dinero de SERVICIOS (Turnos completados)
+        // Buscamos todos los turnos completados e incluimos el precio del servicio
+        const completedAppointments = await Appointment.findAll({
+            where: { status: 'completed' }, // O 'confirmed', según como lo llames. Usaremos 'completed'
+            include: [{
+                model: Service,
+                attributes: ['price']
+            }]
         });
 
-        // 4. Buscar productos con stock CRÍTICO (menos de 5 unidades)
+        // Sumamos manual (Reduce)
+        const totalServiceIncome = completedAppointments.reduce((acc, appt) => {
+            return acc + (appt.Service ? appt.Service.price : 0);
+        }, 0);
+
+        // TOTAL COMBINADO
+        const totalMoney = totalProductSales + totalServiceIncome;
+
+        // 3. Contar turnos
+        const totalAppointments = await Appointment.count();
+        const pendingAppointments = await Appointment.count({ where: { status: 'pending' } });
+
+        // 4. Alertas de Stock
         const lowStockProducts = await Product.findAll({
-            where: {
-                stock: { [Op.lt]: 5 } // "lt" significa "Less Than" (Menor que)
-            },
-            attributes: ['name', 'stock'] // Solo nos importa el nombre y cuánto queda
+            where: { stock: { [Op.lt]: 5 } },
+            attributes: ['name', 'stock']
         });
 
         res.json({
-            money: totalSales,
+            money: totalMoney, // <--- Ahora devuelve la suma real
             appointments: {
                 total: totalAppointments,
                 pending: pendingAppointments
@@ -32,6 +44,7 @@ const getAdminStats = async (req, res) => {
         });
 
     } catch (error) {
+        console.error(error); // Para ver errores en consola
         res.status(500).json({ error: error.message });
     }
 };

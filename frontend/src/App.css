@@ -1,5 +1,121 @@
+/* --- RESET BÁSICO Y FUENTES --- */
+:root {
+  --primary: #007bff;
+  --secondary: #6c757d;
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --dark: #343a40;
+  --light: #f8f9fa;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+body {
+  margin: 0;
+  background-color: #f0f2f5; /* Fondo gris muy suave para toda la web */
+  color: #333;
+}
+
+/* --- MEJORAS EN INPUTS Y SELECTS --- */
+/* Esto hará que todos tus formularios se vean modernos automáticamente */
+input, select {
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+input:focus, select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Anillo azul suave al escribir */
+}
+
+/* --- MEJORAS EN BOTONES --- */
+button {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: transform 0.1s, opacity 0.2s;
+}
+
+button:active {
+  transform: scale(0.98); /* Efecto de "click" */
+}
+
+button:hover {
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+/* --- TARJETAS Y CONTENEDORES --- */
+/* Suaviza los bordes de tus divs con borde */
+div[style*="border"] {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Sombra sutil */
+  border: 1px solid #e9ecef !important; /* Sobreescribe bordes duros */
+}
+
+/* --- TABLAS --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+th {
+  background-color: var(--dark) !important;
+  color: white;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+tr:hover {
+  background-color: #f1f3f5 !important; /* Resalta la fila al pasar el mouse */
+}
+
+td {
+  border-bottom: 1px solid #dee2e6;
+  font-size: 14px;
+}
+
+/* --- UTILIDADES --- */
+/* Tu clase para quitar flechas de inputs numéricos */
 .no-spinner::-webkit-inner-spin-button, 
 .no-spinner::-webkit-outer-spin-button { 
   -webkit-appearance: none; 
   margin: 0; 
+}
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+/* Scrollbar moderna */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #aaa; 
+}
+
+/* Enlaces */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+a:hover {
+  text-decoration: underline;
 }

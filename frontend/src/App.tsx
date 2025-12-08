@@ -10,6 +10,8 @@ import ProductManager from './components/ProductManager'
 import Shop from './components/Shop'; 
 import AdminStats from './components/AdminStats';
 import SalesForm from './components/SalesForm';
+import ClientList from './components/ClientList';
+
 
 // --- COMPONENTE DASHBOARD ---
 function Dashboard() {
@@ -60,9 +62,9 @@ function Dashboard() {
     const day = selectedDate.getDay();
     const hour = parseInt(editData.time.split(':')[0]);
 
-    if (selectedDate < now) return alert('❌ Error: Fecha pasada.');
-    if (day === 0 || day === 1) return alert('❌ Cerrado Domingos y Lunes.');
-    if (hour < 9 || hour >= 18) return alert('❌ Horario de 09:00 a 18:00 hs.');
+    if (selectedDate < now) return alert('Error: Fecha pasada.');
+    if (day === 0 || day === 1) return alert('Cerrado Domingos y Lunes.');
+    if (hour < 9 || hour >= 18) return alert('Horario de 09:00 a 18:00 hs.');
 
     try {
       const res = await fetch(`http://localhost:3001/appointments/${id}`, {
@@ -75,10 +77,59 @@ function Dashboard() {
         alert('✅ Turno reprogramado con éxito');
         setEditingApptId(null);
         fetchAppointments(); 
-        refreshStats(); // 3. Actualizamos las estadísticas al reprogramar
+        refreshStats(); // Actualizamos las estadísticas al reprogramar
       } else {
         const err = await res.json();
         alert('Error: ' + err.error);
+      }
+    } catch (error) {
+      alert('Error de conexión');
+    }
+  };
+
+  // --- NUEVA FUNCIÓN: COMPLETAR TURNO (COBRAR) ---
+  const completeAppointment = async (id: number) => {
+    if (!confirm('¿Marcar turno como REALIZADO y cobrar?')) return;
+
+    try {
+      const res = await fetch(`http://localhost:3001/appointments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }) // Enviamos el nuevo estado
+      });
+
+      if (res.ok) {
+        alert('✅ Turno completado. Dinero agregado a la caja.');
+        fetchAppointments();
+        refreshStats(); // ¡Esto actualiza el panel de dinero al instante!
+      } else {
+        alert('Error al actualizar');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error de conexión');
+    }
+  };
+
+  // --- NUEVA FUNCIÓN: CANCELAR TURNO ---
+  const cancelAppointment = async (id: number) => {
+    if (!confirm('¿Seguro que deseas cancelar este turno?')) return;
+
+    try {
+      const res = await fetch(`http://localhost:3001/appointments/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        // IMPORTANTE: Enviamos el rol del usuario para que el backend sepa si aplicar la regla de 24hs
+        body: JSON.stringify({ status: 'cancelled', requestingRole: user?.role }) 
+      });
+
+      if (res.ok) {
+        alert('✅ Turno cancelado.');
+        fetchAppointments();
+        refreshStats();
+      } else {
+        const err = await res.json();
+        alert(err.error); // Mostramos el error del backend si falta menos de 24hs
       }
     } catch (error) {
       alert('Error de conexión');
@@ -99,33 +150,37 @@ function Dashboard() {
         </div>
       </nav>
 
-      {/* --- ZONA EXCLUSIVA DE ADMIN --- */}
+    {/* --- ZONA EXCLUSIVA DE ADMIN --- */}
       {user?.role === 'admin' && (
         <>
-          {/* Pasamos el gatillo a Stats para que se recargue solo */}
+          {/* 1. Estadísticas arriba de todo */}
           <AdminStats refreshTrigger={statsTrigger} />
           
+          {/* 2. Gestores de Servicios y Productos */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
-             {/* Pasamos refreshStats a los Managers para que AVISEN cuando cambian algo */}
              <ServiceManager onUpdate={refreshStats} />
              <ProductManager onUpdate={refreshStats} />
           </div>
 
+          {/* 3. Formularios de Acción (Turnos y Ventas) - AHORA ESTÁN MÁS ARRIBA */}
           <div style={{ marginTop: '30px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
              <div style={{ flex: 1 }}> 
-                {/* AppointmentForm: Escucha cambios (trigger) y Avisa cambios (refresh) */}
                 <AppointmentForm 
                     onAppointmentCreated={() => { fetchAppointments(); refreshStats(); }} 
                     refreshTrigger={statsTrigger}
                 /> 
              </div>
              <div style={{ flex: 1 }}> 
-                {/* SalesForm: Escucha cambios (trigger) y Avisa cambios (refresh) */}
                 <SalesForm 
                     onSaleCompleted={refreshStats} 
                     refreshTrigger={statsTrigger}
                 /> 
              </div>
+          </div>
+
+          {/* 4. Lista de Clientes - MOVIDA AL FINAL DEL PANEL ADMIN */}
+          <div style={{ marginTop: '30px' }}>
+            <ClientList />
           </div>
         </>
       )}
@@ -176,15 +231,47 @@ function Dashboard() {
                     📅 {appt.date.split('-').reverse().join('/')} a las {appt.time.slice(0, 5)} hs
                  </h3>
                  <p><strong>Cliente:</strong> {appt.User?.name || appt.clientName || 'Anónimo'}</p>
-                 <p><strong>Servicio:</strong> {appt.Service?.name || 'Eliminado'}</p>
+                 <p><strong>Servicio:</strong> {appt.Service?.name || 'Eliminado'} {appt.Service ? `($${appt.Service.price})` : ''}</p>
                  
+{/* Estado con color */}
+                 <p>Estado: <strong style={{ 
+                     color: appt.status === 'completed' ? 'green' : 
+                            appt.status === 'cancelled' ? 'red' : '#007bff' 
+                 }}>
+                    {appt.status === 'completed' ? 'REALIZADO ✅' : 
+                     appt.status === 'cancelled' ? 'CANCELADO ❌' : 'PENDIENTE'}
+                 </strong></p>
+
+                 {/* BOTONES DE ACCIÓN (Solo si está pendiente) */}
                  {appt.status === 'pending' && (
-                   <button 
-                      onClick={() => startEditing(appt)}
-                      style={{ marginTop: '10px', width: '100%', background: '#007bff', color:'white', border: 'none', padding: '8px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                   >
-                     Modificar Turno
-                   </button>
+                   <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
+                     
+                     {/* 1. Botón Editar (Para todos) */}
+                     <button 
+                        onClick={() => startEditing(appt)}
+                        style={{ flex: 1, background: '#007bff', color:'white', border: 'none', padding: '8px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                     >
+                       Editar
+                     </button>
+
+                     {/* 2. Botón CANCELAR (NUEVO - Para todos) */}
+                     <button 
+                        onClick={() => cancelAppointment(appt.id)}
+                        style={{ flex: 1, background: '#dc3545', color:'white', border: 'none', padding: '8px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                     >
+                       Cancelar
+                     </button>
+                     
+                     {/* 3. Botón COBRAR (Solo Admin) */}
+                     {user?.role === 'admin' && (
+                        <button 
+                            onClick={() => completeAppointment(appt.id)}
+                            style={{ flex: 1, background: '#28a745', color:'white', border: 'none', padding: '8px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                        >
+                            Cobrar
+                        </button>
+                     )}
+                   </div>
                  )}
                </>
              )}
