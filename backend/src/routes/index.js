@@ -74,19 +74,22 @@ router.get('/products', getProducts);
 router.post('/products', createProduct);
 router.delete('/products/:id', deleteProduct);
 
-// ERROR 2 CORREGIDO: Borré la ruta vieja y dejé solo esta que hace TODO (Nombre, Precio y Stock)
+// Actualizar Producto
 router.put('/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, price, stock } = req.body;
+        // AGREGAMOS imageUrl AQUÍ
+        const { name, price, stock, imageUrl } = req.body; 
 
-        const product = await Product.findByPk(id); // Ahora sí funcionará porque importamos Product arriba
+        const product = await Product.findByPk(id);
 
         if (!product) return res.status(404).json({ message: "Producto no encontrado" });
 
         product.name = name;
         product.price = price;
         product.stock = stock;
+        // Y AQUÍ
+        product.imageUrl = imageUrl; 
 
         await product.save();
 

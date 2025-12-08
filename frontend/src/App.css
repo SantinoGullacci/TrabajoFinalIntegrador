@@ -119,3 +119,44 @@ a {
 a:hover {
   text-decoration: underline;
 }
+/* --- EFECTOS DE IMAGEN EN TIENDA --- */
+
+/* Clase para la imagen dentro de la tarjeta */
+.product-card-image {
+  transition: transform 0.3s ease; /* Suaviza la animación */
+  cursor: pointer; /* Manito para indicar que se puede clickear */
+}
+
+/* Cuando el mouse pasa por encima del CONTENEDOR de la imagen */
+.product-image-container:hover .product-card-image {
+  transform: scale(1.1); /* Aumenta el tamaño un 10% */
+}
+
+/* --- MODAL DE PANTALLA COMPLETA --- */
+.image-modal-overlay {
+  position: fixed; /* Se queda fijo en la pantalla */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.85); /* Fondo negro semi-transparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000; /* Asegura que esté por encima de todo lo demás */
+  cursor: zoom-out; /* Icono de lupa con menos para cerrar */
+  animation: fadeIn 0.2s ease-in;
+}
+
+.image-modal-content {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  transform: scale(1);
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Efecto de "pop" al abrir */
+}
+
+/* Pequeñas animaciones de entrada */
+@keyframes fadeIn {from { opacity: 0; }}
+@keyframes popIn {from { transform: scale(0.8); }}
