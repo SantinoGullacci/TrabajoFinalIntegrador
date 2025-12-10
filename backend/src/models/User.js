@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const bcrypt = require('bcryptjs'); // Importamos la librería de encriptación
+const bcrypt = require('bcryptjs'); 
 
 module.exports = (sequelize) => {
   const User = sequelize.define('User', {
@@ -28,13 +28,27 @@ module.exports = (sequelize) => {
     phone: {
       type: DataTypes.STRING,
       allowNull: true,
+    },
+    // --- ESTO ES LO QUE FALTABA ---
+    securityAnswer: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'peluqueria' // Valor por defecto para no romper usuarios viejos
     }
   }, { timestamps: false });
 
-  // HOOK: Antes de crear el usuario, encriptamos la contraseña
+  // HOOK: Antes de crear, encriptamos contraseña Y respuesta de seguridad
   User.beforeCreate(async (user) => {
     const salt = await bcrypt.genSalt(10);
+    
+    // 1. Encriptar Password
     user.password = await bcrypt.hash(user.password, salt);
+    
+    // 2. Encriptar Respuesta de Seguridad (Si existe)
+    if (user.securityAnswer) {
+        // La guardamos en minúsculas para que no importe si escriben "Rex" o "rex"
+        user.securityAnswer = await bcrypt.hash(user.securityAnswer.toLowerCase(), salt);
+    }
   });
 
   return User;

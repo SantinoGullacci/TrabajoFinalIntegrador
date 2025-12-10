@@ -1,10 +1,9 @@
 const { Router } = require('express');
-const { getUsers } = require('../controllers/userController');
+// IMPORTANTE: Aquí estaba el error, getUsers solo debe aparecer una vez en esta línea
+const { getUsers, updateUser } = require('../controllers/userController'); 
 const { createAppointment, getAppointments, updateAppointment } = require('../controllers/appointmentController');
-// ERROR 1 CORREGIDO: Agregamos Product aquí abajo
 const { Service, Product } = require('../db'); 
-const { register, login } = require('../controllers/authController');
-// Quitamos updateStock de aquí porque ya no lo vamos a usar suelto
+const { register, login, resetPassword } = require('../controllers/authController');
 const { getProducts, createProduct, deleteProduct } = require('../controllers/productController');
 const { createOrder, getOrdersByUser } = require('../controllers/orderController');
 const { getAdminStats } = require('../controllers/statsController');
@@ -14,9 +13,11 @@ const router = Router();
 // --- RUTAS DE AUTH ---
 router.post('/register', register);
 router.post('/login', login);
+router.post('/reset-password', resetPassword);
 
 // --- RUTAS DE USUARIOS ---
 router.get('/users', getUsers);
+router.put('/users/:id', updateUser); // <--- La ruta nueva para editar perfil
 
 // --- RUTAS DE SERVICIOS ---
 router.post('/services', async (req, res) => {
@@ -78,7 +79,6 @@ router.delete('/products/:id', deleteProduct);
 router.put('/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        // AGREGAMOS imageUrl AQUÍ
         const { name, price, stock, imageUrl } = req.body; 
 
         const product = await Product.findByPk(id);
@@ -88,7 +88,6 @@ router.put('/products/:id', async (req, res) => {
         product.name = name;
         product.price = price;
         product.stock = stock;
-        // Y AQUÍ
         product.imageUrl = imageUrl; 
 
         await product.save();

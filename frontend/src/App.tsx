@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 import AppointmentForm from './components/AppointmentForm';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage'; 
+import ResetPasswordPage from './pages/ResetPasswordPage'; 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './App.css';
 import ServiceManager from './components/ServiceManager';
@@ -10,22 +11,22 @@ import ProductManager from './components/ProductManager'
 import Shop from './components/Shop'; 
 import AdminStats from './components/AdminStats';
 import SalesForm from './components/SalesForm';
-import ClientList from './components/ClientList';
-
+import ClientList from './components/ClientList'; 
+import UserProfile from './components/UserProfile'; // <--- IMPORTAR
 
 // --- COMPONENTE DASHBOARD ---
 function Dashboard() {
   const { user, logout } = useAuth();
   const [appointments, setAppointments] = useState<any[]>([]);
-  
-  // 1. ESTADO "GATILLO": La señal para recargar estadísticas y listas
   const [statsTrigger, setStatsTrigger] = useState(0);
+  
+  // ESTADO DE NAVEGACIÓN (Funciona para Admin y Cliente)
+  const [activeTab, setActiveTab] = useState('inicio');
 
-  // --- ESTADOS PARA EDICIÓN DE TURNOS ---
+  // Estados de edición
   const [editingApptId, setEditingApptId] = useState<number | null>(null);
   const [editData, setEditData] = useState({ date: '', time: '' });
 
-  // 2. FUNCIÓN DE RECARGA GLOBAL
   const refreshStats = () => setStatsTrigger(prev => prev + 1);
 
   const fetchAppointments = () => {
@@ -43,18 +44,17 @@ function Dashboard() {
       .catch(err => { console.error(err); setAppointments([]); });
   };
   
-  useEffect(() => { if(user) fetchAppointments(); }, [user]);
+  // Resetear la tab a 'inicio' si cambia el usuario (login/logout)
+  useEffect(() => { 
+      if(user) {
+          fetchAppointments(); 
+          setActiveTab('inicio');
+      }
+  }, [user]);
 
-  // --- FUNCIONES DE EDICIÓN ---
-  const startEditing = (appt: any) => {
-    setEditingApptId(appt.id);
-    setEditData({ date: appt.date, time: appt.time }); 
-  };
-
-  const cancelEditing = () => {
-    setEditingApptId(null);
-    setEditData({ date: '', time: '' });
-  };
+  // --- FUNCIONES DE TURNOS ---
+  const startEditing = (appt: any) => { setEditingApptId(appt.id); setEditData({ date: appt.date, time: appt.time }); };
+  const cancelEditing = () => { setEditingApptId(null); setEditData({ date: '', time: '' }); };
 
   const saveEdit = async (id: number) => {
     const selectedDate = new Date(`${editData.date}T${editData.time}`);
@@ -72,204 +72,67 @@ function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editData)
       });
-
       if (res.ok) {
-        alert('✅ Turno reprogramado con éxito');
+        alert('✅ Turno reprogramado');
         setEditingApptId(null);
         fetchAppointments(); 
-        refreshStats(); // Actualizamos las estadísticas al reprogramar
-      } else {
-        const err = await res.json();
-        alert('Error: ' + err.error);
-      }
-    } catch (error) {
-      alert('Error de conexión');
-    }
+        refreshStats(); 
+      } else { const err = await res.json(); alert('Error: ' + err.error); }
+    } catch (error) { alert('Error de conexión'); }
   };
 
-  // --- NUEVA FUNCIÓN: COMPLETAR TURNO (COBRAR) ---
   const completeAppointment = async (id: number) => {
     if (!confirm('¿Marcar turno como REALIZADO y cobrar?')) return;
-
     try {
       const res = await fetch(`http://localhost:3001/appointments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'completed' }) // Enviamos el nuevo estado
+        body: JSON.stringify({ status: 'completed' }) 
       });
-
-      if (res.ok) {
-        alert('✅ Turno completado. Dinero agregado a la caja.');
-        fetchAppointments();
-        refreshStats(); // ¡Esto actualiza el panel de dinero al instante!
-      } else {
-        alert('Error al actualizar');
-      }
-    } catch (error) {
-      console.error(error);
-      alert('Error de conexión');
-    }
+      if (res.ok) { alert('✅ Cobrado.'); fetchAppointments(); refreshStats(); } 
+      else { alert('Error al actualizar'); }
+    } catch (error) { alert('Error de conexión'); }
   };
 
-  // --- NUEVA FUNCIÓN: CANCELAR TURNO ---
   const cancelAppointment = async (id: number) => {
-    if (!confirm('¿Seguro que deseas cancelar este turno?')) return;
-
+    if (!confirm('¿Seguro que deseas cancelar?')) return;
     try {
       const res = await fetch(`http://localhost:3001/appointments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        // IMPORTANTE: Enviamos el rol del usuario para que el backend sepa si aplicar la regla de 24hs
         body: JSON.stringify({ status: 'cancelled', requestingRole: user?.role }) 
       });
-
-      if (res.ok) {
-        alert('✅ Turno cancelado.');
-        fetchAppointments();
-        refreshStats();
-      } else {
-        const err = await res.json();
-        alert(err.error); // Mostramos el error del backend si falta menos de 24hs
-      }
-    } catch (error) {
-      alert('Error de conexión');
-    }
+      if (res.ok) { alert('✅ Cancelado.'); fetchAppointments(); refreshStats(); }
+      else { const err = await res.json(); alert(err.error); }
+    } catch (error) { alert('Error de conexión'); }
   };
 
-  return (
-    <div style={{ padding: '20px', fontFamily: 'Arial', maxWidth: '800px', margin: '0 auto' }}>
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #ddd', paddingBottom: '10px' }}>
-        <h1>💇‍♂️ Peluquería - Hola {user?.name}</h1>
-        <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
-          <span style={{ background: '#eee', padding: '5px 10px', borderRadius: '15px', fontSize: '12px' }}>
-            {user?.role === 'admin' ? '👑 ADMIN' : '👤 CLIENTE'}
-          </span>
-          <button onClick={logout} style={{ background: 'red', color: 'white', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer' }}>
-            Salir
-          </button>
-        </div>
-      </nav>
-
-    {/* --- ZONA EXCLUSIVA DE ADMIN --- */}
-      {user?.role === 'admin' && (
-        <>
-          {/* 1. Estadísticas arriba de todo */}
-          <AdminStats refreshTrigger={statsTrigger} />
-          
-          {/* 2. Gestores de Servicios y Productos */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
-             <ServiceManager onUpdate={refreshStats} />
-             <ProductManager onUpdate={refreshStats} />
-          </div>
-
-          {/* 3. Formularios de Acción (Turnos y Ventas) - AHORA ESTÁN MÁS ARRIBA */}
-          <div style={{ marginTop: '30px', display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-             <div style={{ flex: 1 }}> 
-                <AppointmentForm 
-                    onAppointmentCreated={() => { fetchAppointments(); refreshStats(); }} 
-                    refreshTrigger={statsTrigger}
-                /> 
-             </div>
-             <div style={{ flex: 1 }}> 
-                <SalesForm 
-                    onSaleCompleted={refreshStats} 
-                    refreshTrigger={statsTrigger}
-                /> 
-             </div>
-          </div>
-
-          {/* 4. Lista de Clientes - MOVIDA AL FINAL DEL PANEL ADMIN */}
-          <div style={{ marginTop: '30px' }}>
-            <ClientList />
-          </div>
-        </>
-      )}
-
-      {/* ZONA CLIENTE: Formulario de Turnos */}
-      {user?.role === 'client' && (
-         <AppointmentForm onAppointmentCreated={fetchAppointments} />
-      )}
-      
-      {user?.role === 'client' && (
-        <> <hr style={{ margin: '30px 0' }} /> <Shop /> </>
-      )}
-      
-      <hr style={{ margin: '30px 0' }} />
-      
-      <h2>📅 Mis Turnos</h2>
-      <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+  const AppointmentsList = () => (
+    <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
         {appointments.map((appt) => (
           <div key={appt.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', background: editingApptId === appt.id ? '#e3f2fd' : '#fff' }}>
-             
-             {/* MODO EDICIÓN */}
              {editingApptId === appt.id ? (
                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                  <label style={{fontWeight: 'bold', color: '#007bff'}}>Reprogramar:</label>
-                 <input 
-                    type="date" 
-                    value={editData.date} 
-                    min={new Date().toISOString().split('T')[0]}
-                    onChange={(e) => setEditData({...editData, date: e.target.value})}
-                    style={{ padding: '5px' }}
-                 />
-                 <input 
-                    type="time" 
-                    value={editData.time}
-                    min="09:00" max="18:00"
-                    onChange={(e) => setEditData({...editData, time: e.target.value})}
-                    style={{ padding: '5px' }}
-                 />
+                 <input type="date" value={editData.date} min={new Date().toISOString().split('T')[0]} onChange={(e) => setEditData({...editData, date: e.target.value})} style={{ padding: '5px' }} />
+                 <input type="time" value={editData.time} min="09:00" max="18:00" onChange={(e) => setEditData({...editData, time: e.target.value})} style={{ padding: '5px' }} />
                  <div style={{ display: 'flex', gap: '5px' }}>
                     <button onClick={() => saveEdit(appt.id)} style={{ flex: 1, background: '#28a745', color: 'white', border: 'none', padding: '5px', borderRadius: '4px', cursor: 'pointer' }}>Guardar</button>
                     <button onClick={cancelEditing} style={{ flex: 1, background: '#6c757d', color: 'white', border: 'none', padding: '5px', borderRadius: '4px', cursor: 'pointer' }}>Cancelar</button>
                  </div>
                </div>
              ) : (
-               /* MODO VISUALIZACIÓN */
                <>
-                 <h3>
-                    📅 {appt.date.split('-').reverse().join('/')} a las {appt.time.slice(0, 5)} hs
-                 </h3>
+                 <h3>📅 {appt.date.split('-').reverse().join('/')} a las {appt.time.slice(0, 5)} hs</h3>
                  <p><strong>Cliente:</strong> {appt.User?.name || appt.clientName || 'Anónimo'}</p>
                  <p><strong>Servicio:</strong> {appt.Service?.name || 'Eliminado'} {appt.Service ? `($${appt.Service.price})` : ''}</p>
-                 
-{/* Estado con color */}
-                 <p>Estado: <strong style={{ 
-                     color: appt.status === 'completed' ? 'green' : 
-                            appt.status === 'cancelled' ? 'red' : '#007bff' 
-                 }}>
-                    {appt.status === 'completed' ? 'REALIZADO ✅' : 
-                     appt.status === 'cancelled' ? 'CANCELADO ❌' : 'PENDIENTE'}
-                 </strong></p>
-
-                 {/* BOTONES DE ACCIÓN (Solo si está pendiente) */}
+                 <p>Estado: <strong style={{ color: appt.status === 'completed' ? 'green' : appt.status === 'cancelled' ? 'red' : '#007bff' }}>{appt.status === 'completed' ? 'REALIZADO ✅' : appt.status === 'cancelled' ? 'CANCELADO ❌' : 'PENDIENTE'}</strong></p>
                  {appt.status === 'pending' && (
                    <div style={{ display: 'flex', gap: '5px', marginTop: '10px' }}>
-                     
-                     {/* 1. Botón Editar (Para todos) */}
-                     <button 
-                        onClick={() => startEditing(appt)}
-                        style={{ flex: 1, background: '#007bff', color:'white', border: 'none', padding: '8px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                     >
-                       Editar
-                     </button>
-
-                     {/* 2. Botón CANCELAR (NUEVO - Para todos) */}
-                     <button 
-                        onClick={() => cancelAppointment(appt.id)}
-                        style={{ flex: 1, background: '#dc3545', color:'white', border: 'none', padding: '8px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                     >
-                       Cancelar
-                     </button>
-                     
-                     {/* 3. Botón COBRAR (Solo Admin) */}
+                     <button onClick={() => startEditing(appt)} style={{ flex: 1, background: '#007bff', color:'white', border: 'none', padding: '8px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Editar</button>
+                     <button onClick={() => cancelAppointment(appt.id)} style={{ flex: 1, background: '#dc3545', color:'white', border: 'none', padding: '8px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>Cancelar</button>
                      {user?.role === 'admin' && (
-                        <button 
-                            onClick={() => completeAppointment(appt.id)}
-                            style={{ flex: 1, background: '#28a745', color:'white', border: 'none', padding: '8px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                        >
-                            Cobrar
-                        </button>
+                        <button onClick={() => completeAppointment(appt.id)} style={{ flex: 1, background: '#28a745', color:'white', border: 'none', padding: '8px', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>✅ Cobrar</button>
                      )}
                    </div>
                  )}
@@ -277,8 +140,83 @@ function Dashboard() {
              )}
           </div>
         ))}
+    </div>
+  );
+
+  // --- RENDERIZADO DINÁMICO (Switch gigante para ambos roles) ---
+  const renderContent = () => {
+    // 1. VISTAS DE ADMIN
+    if (user?.role === 'admin') {
+        switch (activeTab) {
+            case 'inicio': return <AdminStats refreshTrigger={statsTrigger} />;
+            case 'turnos': return <><AppointmentForm onAppointmentCreated={() => { fetchAppointments(); refreshStats(); }} refreshTrigger={statsTrigger} /><br/><AppointmentsList /></>;
+            case 'ventas': return <SalesForm onSaleCompleted={refreshStats} refreshTrigger={statsTrigger} />;
+            case 'servicios': return <ServiceManager onUpdate={refreshStats} />;
+            case 'productos': return <ProductManager onUpdate={refreshStats} />;
+            case 'clientes': return <ClientList />;
+            default: return <AdminStats refreshTrigger={statsTrigger} />;
+        }
+    }
+    
+    // 2. VISTAS DE CLIENTE
+    if (user?.role === 'client') {
+        switch (activeTab) {
+            case 'inicio': // En inicio mostramos sus turnos y formulario
+                return (
+                    <>
+                        <h2>📅 Mis Turnos</h2>
+                        <AppointmentForm onAppointmentCreated={fetchAppointments} />
+                        <br/>
+                        <AppointmentsList />
+                    </>
+                );
+            case 'tienda': return <Shop />;
+            case 'perfil': return <UserProfile />;
+            default: return <AppointmentsList />;
+        }
+    }
+  };
+
+  // --- LAYOUT CON SIDEBAR (Compartido) ---
+  return (
+    <div className="admin-container">
+      {/* SIDEBAR */}
+      <div className="sidebar">
+        <h2 style={{fontSize: '18px'}}>💇‍♂️ {user?.role === 'admin' ? 'Admin Panel' : 'Peluquería'}</h2>
+        
+        {/* MENÚ DE ADMIN */}
+        {user?.role === 'admin' && (
+            <>
+                <button className={`sidebar-btn ${activeTab === 'inicio' ? 'active' : ''}`} onClick={() => setActiveTab('inicio')}>📊 Resumen</button>
+                <button className={`sidebar-btn ${activeTab === 'turnos' ? 'active' : ''}`} onClick={() => setActiveTab('turnos')}>📅 Turnos</button>
+                <button className={`sidebar-btn ${activeTab === 'ventas' ? 'active' : ''}`} onClick={() => setActiveTab('ventas')}>💰 Ventas</button>
+                <button className={`sidebar-btn ${activeTab === 'servicios' ? 'active' : ''}`} onClick={() => setActiveTab('servicios')}>✂️ Servicios</button>
+                <button className={`sidebar-btn ${activeTab === 'productos' ? 'active' : ''}`} onClick={() => setActiveTab('productos')}>🧴 Productos</button>
+                <button className={`sidebar-btn ${activeTab === 'clientes' ? 'active' : ''}`} onClick={() => setActiveTab('clientes')}>👥 Clientes</button>
+            </>
+        )}
+
+        {/* MENÚ DE CLIENTE */}
+        {user?.role === 'client' && (
+            <>
+                <button className={`sidebar-btn ${activeTab === 'inicio' ? 'active' : ''}`} onClick={() => setActiveTab('inicio')}>📅 Mis Turnos</button>
+                <button className={`sidebar-btn ${activeTab === 'tienda' ? 'active' : ''}`} onClick={() => setActiveTab('tienda')}>🛍️ Tienda</button>
+                <button className={`sidebar-btn ${activeTab === 'perfil' ? 'active' : ''}`} onClick={() => setActiveTab('perfil')}>👤 Mi Perfil</button>
+            </>
+        )}
+
+        <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #495057' }}>
+          <p style={{ fontSize: '12px', color: '#adb5bd' }}>Hola, {user?.name}</p>
+          <button onClick={logout} style={{ width: '100%', padding: '10px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', marginTop: '10px' }}>
+            Cerrar Sesión
+          </button>
+        </div>
       </div>
 
+      {/* CONTENIDO */}
+      <div className="content-area">
+        {renderContent()}
+      </div>
     </div>
   );
 }
@@ -296,11 +234,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </AuthProvider>

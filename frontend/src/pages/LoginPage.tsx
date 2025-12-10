@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Importamos Link y useNavigate
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -8,10 +8,8 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // Esta función se ejecuta al hacer click en "Entrar" O al apretar "Enter"
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Evita que la página se recargue sola
-    
+    e.preventDefault();
     try {
       const response = await fetch('http://localhost:3001/login', {
         method: 'POST',
@@ -23,7 +21,7 @@ export default function LoginPage() {
 
       if (response.ok) {
         login(data.token, data.user);
-        navigate('/'); // Te manda al Dashboard
+        navigate('/'); // Redirige al Dashboard
       } else {
         alert(data.error || 'Error al iniciar sesión');
       }
@@ -34,43 +32,45 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px' }}>
-      {/* CLAVE: Usar la etiqueta <form onSubmit={handleSubmit}> 
-         hace que la tecla ENTER dispare el evento automáticamente.
-      */}
+    <div style={{ display: 'flex', justifyContent: 'center', marginTop: '50px', fontFamily: 'Arial' }}>
       <form onSubmit={handleSubmit} style={{ padding: '30px', border: '1px solid #ccc', borderRadius: '8px', width: '300px', background: '#f9f9f9' }}>
         <h2 style={{ textAlign: 'center' }}>🔐 Iniciar Sesión</h2>
         
         <div style={{ marginBottom: '15px' }}>
-          <label>Email:</label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Email:</label>
           <input 
             type="email" 
             value={email} 
             onChange={(e) => setEmail(e.target.value)} 
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
             required 
-            autoFocus // Ponemos el cursor aquí al cargar la página
           />
         </div>
 
         <div style={{ marginBottom: '15px' }}>
-          <label>Contraseña:</label>
+          <label style={{ display: 'block', marginBottom: '5px' }}>Contraseña:</label>
           <input 
             type="password" 
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
-            style={{ width: '100%', padding: '8px', marginTop: '5px' }}
+            style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
             required 
           />
         </div>
 
-        {/* El type="submit" es el que conecta el Enter con el formulario */}
-        <button type="submit" style={{ width: '100%', padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
+        <button type="submit" style={{ width: '100%', padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '16px' }}>
           Entrar
         </button>
 
-        <p style={{ textAlign: 'center', marginTop: '15px' }}>
-          ¿Eres nuevo? <Link to="/register">Crea tu cuenta aquí</Link>
+        {/* --- AQUÍ AGREGAMOS EL LINK DE RECUPERACIÓN --- */}
+        <div style={{ textAlign: 'center', marginTop: '15px' }}>
+           <Link to="/reset-password" style={{ fontSize: '13px', color: '#6c757d', textDecoration: 'none' }}>
+             ¿Olvidaste tu contraseña?
+           </Link>
+        </div>
+
+        <p style={{ textAlign: 'center', marginTop: '15px', fontSize: '14px' }}>
+          ¿Eres nuevo? <Link to="/register" style={{ color: '#007bff' }}>Crea tu cuenta aquí</Link>
         </p>
       </form>
     </div>
