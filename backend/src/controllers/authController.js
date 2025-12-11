@@ -50,7 +50,7 @@ const login = async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        res.status(200).json({ token, user: { id: user.id, name: user.name, role: user.role } });
+        res.status(200).json({ token, user: { id: user.id, name: user.name, role: user.role, email: user.email } });
         
 
     } catch (error) {
@@ -96,4 +96,26 @@ const resetPassword = async (req, res) => {
     }
 };
 
-module.exports = { register, login, resetPassword };
+// CAMBIAR CONTRASEÑA (Desde Mi Perfil - Logueado SI)
+const changePassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { currentPassword, newPassword } = req.body;
+
+        const user = await User.findByPk(id);
+        if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+
+        const validPassword = await bcrypt.compare(currentPassword, user.password);
+        if (!validPassword) return res.status(400).json({ error: "La contraseña actual es incorrecta" });
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        await user.save();
+
+        res.json({ message: "Contraseña actualizada correctamente" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { register, login, resetPassword, changePassword };

@@ -3,10 +3,12 @@ const { Router } = require('express');
 const { getUsers, updateUser } = require('../controllers/userController'); 
 const { createAppointment, getAppointments, updateAppointment } = require('../controllers/appointmentController');
 const { Service, Product } = require('../db'); 
-const { register, login, resetPassword } = require('../controllers/authController');
+const { register, login, resetPassword, changePassword } = require('../controllers/authController');
 const { getProducts, createProduct, deleteProduct } = require('../controllers/productController');
 const { createOrder, getOrdersByUser } = require('../controllers/orderController');
 const { getAdminStats } = require('../controllers/statsController');
+const { deleteUser } = require('../controllers/userController');
+
 
 const router = Router();
 
@@ -14,10 +16,12 @@ const router = Router();
 router.post('/register', register);
 router.post('/login', login);
 router.post('/reset-password', resetPassword);
+router.put('/auth/change-password/:id', changePassword); 
 
 // --- RUTAS DE USUARIOS ---
 router.get('/users', getUsers);
-router.put('/users/:id', updateUser); // <--- La ruta nueva para editar perfil
+router.put('/users/:id', updateUser);
+router.delete('/users/:id', deleteUser);
 
 // --- RUTAS DE SERVICIOS ---
 router.post('/services', async (req, res) => {

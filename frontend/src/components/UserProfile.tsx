@@ -1,56 +1,56 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+interface UserData {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+}
+
 export default function UserProfile() {
   const { user, login } = useAuth(); 
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  
+  // Datos Personales
+  const [formData, setFormData] = useState({ 
+      name: user?.name || '', 
+      email: user?.email || '', 
+      phone: ''
+  });
 
-  // Cargar datos actuales
+  // Cambio de Contraseña
+  const [passData, setPassData] = useState({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+  });
+  
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     if (user) {
       setLoading(true);
       fetch('http://localhost:3001/users')
-        .then(res => {
-            if (!res.ok) throw new Error('No se pudo conectar al servidor');
-            return res.json();
-        })
-        .then((users: any[]) => {
-            // Buscamos nuestro usuario en la lista
+        .then(res => res.json())
+        .then((users: UserData[]) => {
             const myUser = users.find(u => u.id === user.id);
             if (myUser) {
                 setFormData({
                     name: myUser.name || '',
-                    email: myUser.email || '',
+                    email: myUser.email || user.email || '',
                     phone: myUser.phone || ''
-                });
-            } else {
-                // Fallback: Si no nos encontramos en la lista, usamos los datos del contexto
-                setFormData({
-                    name: user.name,
-                    email: '', // El contexto a veces no tiene el mail, cuidado ahí
-                    phone: ''
                 });
             }
         })
-        .catch(err => {
-            console.error(err);
-            setError('No se pudieron cargar los datos frescos.');
-            // En caso de error, intentamos mostrar lo que tenemos en memoria
-            setFormData(prev => ({...prev, name: user.name }));
-        })
-        .finally(() => {
-            // ESTO ES LO QUE FALTABA: Terminar la carga sí o sí
-            setLoading(false);
-        });
+        .catch(console.error)
+        .finally(() => setLoading(false));
     }
   }, [user]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Guardar Perfil (Nombre/Teléfono)
+  const handleSubmitProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
     try {
       const res = await fetch(`http://localhost:3001/users/${user.id}`, {
         method: 'PUT',
@@ -60,64 +60,96 @@ export default function UserProfile() {
 
       if (res.ok) {
         alert('✅ Perfil actualizado');
-        // Actualizamos el contexto
         const currentToken = localStorage.getItem('token');
-        if (currentToken) {
-            login(currentToken, { ...user, name: formData.name });
-        }
+        if (currentToken) login(currentToken, { ...user, name: formData.name });
       } else {
         alert('Error al actualizar');
       }
     } catch (error) { alert('Error de conexión'); }
   };
 
-  if (loading) return <div style={{padding: 20}}>Cargando perfil...</div>;
+  // Guardar Password
+  const handleSubmitPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    if (passData.newPassword !== passData.confirmPassword) return alert('❌ Las contraseñas no coinciden');
+    if (passData.newPassword.length < 6) return alert('❌ Mínimo 6 caracteres');
+
+    try {
+        const res = await fetch(`http://localhost:3001/auth/change-password/${user.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                currentPassword: passData.currentPassword,
+                newPassword: passData.newPassword
+            })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            alert('✅ Contraseña cambiada con éxito');
+            setPassData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    } catch (error) { alert('Error de conexión'); }
+  };
+
+  if (loading && !formData.email) return <div style={{padding: 20}}>Cargando perfil...</div>;
 
   return (
-    <div style={{ padding: '20px', background: 'white', borderRadius: '8px', border: '1px solid #ddd', maxWidth: '500px' }}>
-      <h2 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px' }}>👤 Mi Perfil</h2>
+    <div style={{ maxWidth: '600px', margin: '0 auto' }}>
       
-      {error && <p style={{color: 'red', fontSize: '14px'}}>{error}</p>}
-
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+      {/* TARJETA 1: DATOS PERSONALES */}
+      <div style={{ padding: '20px', background: 'white', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '20px' }}>
+        <h2 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginTop: 0 }}>👤 Datos Personales</h2>
         
-        <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Email (No modificable):</label>
-            <input 
-                type="email" 
-                value={formData.email} 
-                disabled 
-                style={{ width: '100%', background: '#e9ecef', cursor: 'not-allowed', color: '#6c757d' }} 
-            />
-        </div>
+        <form onSubmit={handleSubmitProfile} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
+            <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Email (No modificable):</label>
+                <input type="email" value={formData.email} readOnly style={{ width: '100%', background: '#e9ecef', color: '#6c757d' }} />
+            </div>
 
-        <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Nombre Completo:</label>
-            <input 
-                type="text" 
-                value={formData.name} 
-                onChange={e => setFormData({...formData, name: e.target.value})}
-                style={{ width: '100%' }}
-                required
-            />
-        </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Nombre:</label>
+                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%' }} required />
+                </div>
+                <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Teléfono:</label>
+                    <input type="text" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} style={{ width: '100%' }} />
+                </div>
+            </div>
 
-        <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Teléfono:</label>
-            <input 
-                type="text" 
-                value={formData.phone} 
-                onChange={e => setFormData({...formData, phone: e.target.value})}
-                placeholder="Ej: 11 1234 5678"
-                style={{ width: '100%' }}
-            />
-        </div>
+            <button type="submit" style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+                💾 Guardar Datos
+            </button>
+        </form>
+      </div>
 
-        <button type="submit" style={{ padding: '10px', background: '#007bff', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold', marginTop: '10px' }}>
-            💾 Guardar Cambios
-        </button>
-
-      </form>
+      {/* TARJETA 2: SEGURIDAD */}
+      <div style={{ padding: '20px', background: 'white', borderRadius: '8px', border: '1px solid #ddd' }}>
+        <h2 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginTop: 0, color: '#dc3545' }}>🔐 Seguridad</h2>
+        <form onSubmit={handleSubmitPassword} style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
+            <div>
+                <label style={{ display: 'block', marginBottom: '5px' }}>Contraseña Actual:</label>
+                <input type="password" value={passData.currentPassword} onChange={(e) => setPassData({...passData, currentPassword: e.target.value})} style={{ width: '100%' }} required />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                    <label style={{ display: 'block', marginBottom: '5px' }}>Nueva Contraseña:</label>
+                    <input type="password" value={passData.newPassword} onChange={(e) => setPassData({...passData, newPassword: e.target.value})} style={{ width: '100%' }} required />
+                </div>
+                <div>
+                    <label style={{ display: 'block', marginBottom: '5px' }}>Repetir Nueva:</label>
+                    <input type="password" value={passData.confirmPassword} onChange={(e) => setPassData({...passData, confirmPassword: e.target.value})} style={{ width: '100%' }} required />
+                </div>
+            </div>
+            <button type="submit" style={{ padding: '10px', background: '#6c757d', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
+                🔄 Actualizar Contraseña
+            </button>
+        </form>
+      </div>
     </div>
   );
 }

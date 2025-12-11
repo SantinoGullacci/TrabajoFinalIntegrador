@@ -12,18 +12,20 @@ import Shop from './components/Shop';
 import AdminStats from './components/AdminStats';
 import SalesForm from './components/SalesForm';
 import ClientList from './components/ClientList'; 
-import UserProfile from './components/UserProfile'; // <--- IMPORTAR
+import UserProfile from './components/UserProfile';
+import Header from './components/Header'; 
 
 // --- COMPONENTE DASHBOARD ---
 function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [appointments, setAppointments] = useState<any[]>([]);
   const [statsTrigger, setStatsTrigger] = useState(0);
   
-  // ESTADO DE NAVEGACIÓN (Funciona para Admin y Cliente)
   const [activeTab, setActiveTab] = useState('inicio');
 
-  // Estados de edición
+  // 1. NUEVO ESTADO: Para abrir/cerrar el sub-menú de Turnos
+  const [isTurnosMenuOpen, setIsTurnosMenuOpen] = useState(false); // <--- NUEVO
+
   const [editingApptId, setEditingApptId] = useState<number | null>(null);
   const [editData, setEditData] = useState({ date: '', time: '' });
 
@@ -34,25 +36,17 @@ function Dashboard() {
     if (user?.role === 'client') {
         url = `http://localhost:3001/appointments?userId=${user.id}`;
     }
-
     fetch(url)
       .then((res) => { if (!res.ok) throw new Error("Error server"); return res.json(); })
-      .then((data) => {
-          if (Array.isArray(data)) setAppointments(data);
-          else setAppointments([]);
-      })
+      .then((data) => { if (Array.isArray(data)) setAppointments(data); else setAppointments([]); })
       .catch(err => { console.error(err); setAppointments([]); });
   };
   
-  // Resetear la tab a 'inicio' si cambia el usuario (login/logout)
   useEffect(() => { 
-      if(user) {
-          fetchAppointments(); 
-          setActiveTab('inicio');
-      }
+      if(user) { fetchAppointments(); setActiveTab('inicio'); }
   }, [user]);
 
-  // --- FUNCIONES DE TURNOS ---
+  // --- FUNCIONES DE TURNOS (Iguales que antes) ---
   const startEditing = (appt: any) => { setEditingApptId(appt.id); setEditData({ date: appt.date, time: appt.time }); };
   const cancelEditing = () => { setEditingApptId(null); setEditData({ date: '', time: '' }); };
 
@@ -107,9 +101,12 @@ function Dashboard() {
     } catch (error) { alert('Error de conexión'); }
   };
 
-  const AppointmentsList = () => (
+  // --- COMPONENTE LISTA REUTILIZABLE (Ahora recibe la lista filtrada) ---
+  const AppointmentsList = ({ list }: { list: any[] }) => (
     <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-        {appointments.map((appt) => (
+        {list.length === 0 ? <p style={{color: '#666', fontStyle: 'italic'}}>No hay turnos en esta sección.</p> : null}
+        
+        {list.map((appt) => (
           <div key={appt.id} style={{ border: '1px solid #ccc', padding: '15px', borderRadius: '8px', background: editingApptId === appt.id ? '#e3f2fd' : '#fff' }}>
              {editingApptId === appt.id ? (
                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -143,13 +140,12 @@ function Dashboard() {
     </div>
   );
 
-  // --- RENDERIZADO DINÁMICO (Switch gigante para ambos roles) ---
   const renderContent = () => {
     // 1. VISTAS DE ADMIN
     if (user?.role === 'admin') {
         switch (activeTab) {
             case 'inicio': return <AdminStats refreshTrigger={statsTrigger} />;
-            case 'turnos': return <><AppointmentForm onAppointmentCreated={() => { fetchAppointments(); refreshStats(); }} refreshTrigger={statsTrigger} /><br/><AppointmentsList /></>;
+            case 'turnos': return <><AppointmentForm onAppointmentCreated={() => { fetchAppointments(); refreshStats(); }} refreshTrigger={statsTrigger} /><br/><AppointmentsList list={appointments} /></>;
             case 'ventas': return <SalesForm onSaleCompleted={refreshStats} refreshTrigger={statsTrigger} />;
             case 'servicios': return <ServiceManager onUpdate={refreshStats} />;
             case 'productos': return <ProductManager onUpdate={refreshStats} />;
@@ -158,31 +154,49 @@ function Dashboard() {
         }
     }
     
-    // 2. VISTAS DE CLIENTE
+    // 2. VISTAS DE CLIENTE (CON LÓGICA DE FILTRADO)
     if (user?.role === 'client') {
+        // Filtros
+        const pendingList = appointments.filter(a => a.status === 'pending');
+        const historyList = appointments.filter(a => a.status === 'completed' || a.status === 'cancelled');
+
         switch (activeTab) {
-            case 'inicio': // En inicio mostramos sus turnos y formulario
+            case 'inicio': // Por defecto mostramos todo
+            case 'agendar': // Vista solo para Agendar
                 return (
                     <>
-                        <h2>📅 Mis Turnos</h2>
-                        <AppointmentForm onAppointmentCreated={fetchAppointments} />
-                        <br/>
-                        <AppointmentsList />
+                        <h2 style={{borderBottom: '2px solid #007bff', paddingBottom: '10px'}}>📅 Agendar Nuevo Turno</h2>
+                        <AppointmentForm onAppointmentCreated={() => { fetchAppointments(); setActiveTab('pendientes'); }} />
                     </>
                 );
+            case 'pendientes': // Vista solo Pendientes
+                return (
+                    <>
+                        <h2 style={{borderBottom: '2px solid #ffc107', paddingBottom: '10px'}}>⏳ Turnos Pendientes</h2>
+                        <AppointmentsList list={pendingList} />
+                    </>
+                );
+            case 'historial': // Vista solo Historial
+                return (
+                    <>
+                        <h2 style={{borderBottom: '2px solid #28a745', paddingBottom: '10px'}}>📜 Historial de Turnos</h2>
+                        <AppointmentsList list={historyList} />
+                    </>
+                );
+            
             case 'tienda': return <Shop />;
             case 'perfil': return <UserProfile />;
-            default: return <AppointmentsList />;
+            default: return <AppointmentsList list={appointments} />;
         }
     }
   };
 
-  // --- LAYOUT CON SIDEBAR (Compartido) ---
   return (
     <div className="admin-container">
-      {/* SIDEBAR */}
+      
+      {/* 1. SIDEBAR */}
       <div className="sidebar">
-        <h2 style={{fontSize: '18px'}}>💇‍♂️ {user?.role === 'admin' ? 'Admin Panel' : 'Peluquería'}</h2>
+        <h2 style={{fontSize: '14px', textTransform: 'uppercase', color: '#6c757d', letterSpacing: '1px', marginBottom: '20px'}}>Navegación</h2>
         
         {/* MENÚ DE ADMIN */}
         {user?.role === 'admin' && (
@@ -196,27 +210,68 @@ function Dashboard() {
             </>
         )}
 
-        {/* MENÚ DE CLIENTE */}
+{/* MENÚ DE CLIENTE (CON ANIMACIÓN) */}
         {user?.role === 'client' && (
             <>
-                <button className={`sidebar-btn ${activeTab === 'inicio' ? 'active' : ''}`} onClick={() => setActiveTab('inicio')}>📅 Mis Turnos</button>
+                {/* BOTÓN PADRE: MIS TURNOS */}
+                <button 
+                    className={`sidebar-btn ${['agendar', 'pendientes', 'historial'].includes(activeTab) ? 'active' : ''}`} 
+                    onClick={() => setIsTurnosMenuOpen(!isTurnosMenuOpen)}
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                    <span>📅 Mis Turnos</span>
+                    {/* La flechita ahora tiene clase para animarse */}
+                    <span className={`arrow-icon ${isTurnosMenuOpen ? 'open' : ''}`} style={{ fontSize: '10px' }}>▼</span>
+                </button>
+
+                {/* SUB-MENÚ (Siempre está en el código, pero CSS controla si se ve) */}
+                <div className={`submenu-container ${isTurnosMenuOpen ? 'open' : ''}`}>
+                    <div style={{ display: 'flex', flexDirection: 'column', padding: '5px 0' }}>
+                        <button 
+                            className={`sidebar-btn ${activeTab === 'agendar' ? 'active' : ''}`} 
+                            onClick={() => setActiveTab('agendar')}
+                            style={{ paddingLeft: '35px', fontSize: '13px' }}
+                        >
+                            ➕ Agendar Nuevo
+                        </button>
+
+                        <button 
+                            className={`sidebar-btn ${activeTab === 'pendientes' ? 'active' : ''}`} 
+                            onClick={() => setActiveTab('pendientes')}
+                            style={{ paddingLeft: '35px', fontSize: '13px' }}
+                        >
+                            ⏳ Pendientes
+                        </button>
+
+                        <button 
+                            className={`sidebar-btn ${activeTab === 'historial' ? 'active' : ''}`} 
+                            onClick={() => setActiveTab('historial')}
+                            style={{ paddingLeft: '35px', fontSize: '13px' }}
+                        >
+                            📜 Historial
+                        </button>
+                    </div>
+                </div>
+
                 <button className={`sidebar-btn ${activeTab === 'tienda' ? 'active' : ''}`} onClick={() => setActiveTab('tienda')}>🛍️ Tienda</button>
                 <button className={`sidebar-btn ${activeTab === 'perfil' ? 'active' : ''}`} onClick={() => setActiveTab('perfil')}>👤 Mi Perfil</button>
             </>
         )}
-
-        <div style={{ marginTop: 'auto', paddingTop: '20px', borderTop: '1px solid #495057' }}>
-          <p style={{ fontSize: '12px', color: '#adb5bd' }}>Hola, {user?.name}</p>
-          <button onClick={logout} style={{ width: '100%', padding: '10px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', marginTop: '10px' }}>
-            Cerrar Sesión
-          </button>
-        </div>
       </div>
 
-      {/* CONTENIDO */}
-      <div className="content-area">
-        {renderContent()}
+      {/* 2. ZONA DERECHA */}
+      <div className="main-content-wrapper">
+         <Header onNavigate={(tab) => {
+             // Si navegan desde el header, abrimos el menú si es necesario
+             if (['agendar', 'pendientes', 'historial'].includes(tab)) setIsTurnosMenuOpen(true);
+             setActiveTab(tab);
+         }} />
+
+         <div className="content-area">
+            {renderContent()}
+         </div>
       </div>
+
     </div>
   );
 }
