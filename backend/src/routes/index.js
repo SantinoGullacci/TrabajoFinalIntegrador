@@ -83,7 +83,7 @@ router.delete('/products/:id', deleteProduct);
 router.put('/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, price, stock, imageUrl } = req.body; 
+        const { name, price, stock, imageUrl, category, brand } = req.body;
 
         const product = await Product.findByPk(id);
 
@@ -92,7 +92,9 @@ router.put('/products/:id', async (req, res) => {
         product.name = name;
         product.price = price;
         product.stock = stock;
-        product.imageUrl = imageUrl; 
+        product.imageUrl = imageUrl;
+        product.category = category;
+        product.brand = brand; 
 
         await product.save();
 

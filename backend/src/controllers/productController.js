@@ -13,12 +13,14 @@ const getProducts = async (req, res) => {
 // Crear producto (Solo Admin)
 const createProduct = async (req, res) => {
     try {
-        const { name, price, stock, description, imageUrl } = req.body;
+        const { name, price, stock, description, imageUrl, category, brand } = req.body;
         if (!name || !price) return res.status(400).json({ error: "Falta nombre o precio" });
 
-        const newProduct = await Product.create({ name, price, stock, description, imageUrl });
+        const newProduct = await Product.create({ 
+            name, price, stock, description, imageUrl, category, brand 
+        });
         res.status(201).json(newProduct);
-    } catch (error) {
+    } catch (error){
         res.status(500).json({ error: error.message });
     }
 };
