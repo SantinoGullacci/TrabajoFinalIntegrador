@@ -49,14 +49,15 @@ export default function Shop() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // --- ESTADOS PARA FILTROS ---
+  const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
   const [filterBrand, setFilterBrand] = useState('');
   
-  // Estados para inputs de precio (Texto que escribe el usuario)
+  // Estados para inputs de precio
   const [minPriceInput, setMinPriceInput] = useState('');
   const [maxPriceInput, setMaxPriceInput] = useState('');
 
-  // Estados para precio aplicado (Valores numéricos reales al filtrar)
+  // Estados para precio aplicado
   const [appliedMinPrice, setAppliedMinPrice] = useState<number | null>(null);
   const [appliedMaxPrice, setAppliedMaxPrice] = useState<number | null>(null);
 
@@ -70,27 +71,20 @@ export default function Shop() {
     } catch (error) { console.error(error); }
   };
 
-  // Listas únicas
   const categories = useMemo(() => Array.from(new Set(products.map(p => p.category).filter(Boolean))), [products]);
   const brands = useMemo(() => Array.from(new Set(products.map(p => p.brand).filter(Boolean))), [products]);
 
   // Lógica de filtrado
   const filteredProducts = products.filter(p => {
-      // 1. Filtro Categoría
+      const matchSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchCat = filterCategory ? p.category === filterCategory : true;
-      // 2. Filtro Marca
       const matchBrand = filterBrand ? p.brand === filterBrand : true;
-      
-      // 3. Filtro Precio (Estilo Mercado Libre)
-      // Si hay un mínimo aplicado, el precio debe ser mayor o igual
       const matchMin = appliedMinPrice !== null ? p.price >= appliedMinPrice : true;
-      // Si hay un máximo aplicado, el precio debe ser menor o igual
       const matchMax = appliedMaxPrice !== null ? p.price <= appliedMaxPrice : true;
 
-      return matchCat && matchBrand && matchMin && matchMax;
+      return matchSearch && matchCat && matchBrand && matchMin && matchMax;
   });
 
-  // Función para aplicar el filtro de precio al hacer click en la flecha
   const applyPriceFilter = () => {
       const min = minPriceInput !== '' ? Number(minPriceInput) : null;
       const max = maxPriceInput !== '' ? Number(maxPriceInput) : null;
@@ -98,8 +92,8 @@ export default function Shop() {
       setAppliedMaxPrice(max);
   };
 
-  // Función para limpiar filtros
   const clearFilters = () => {
+      setSearchTerm('');
       setFilterCategory('');
       setFilterBrand('');
       setMinPriceInput('');
@@ -133,66 +127,84 @@ export default function Shop() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
-      {/* BARRA DE FILTROS SUPERIOR */}
-      <div style={{ background: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)', display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center' }}>
-          <h3 style={{margin: 0, marginRight: 'auto', display: 'flex', alignItems: 'center', gap: '5px'}}>
-             🔍 Filtros
-          </h3>
+      {/* BARRA DE FILTROS TIPO MERCADO LIBRE (Diseño imagen adjunta) */}
+      <div style={{ background: 'white', padding: '15px 20px', borderRadius: '6px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'flex-end' }}>
           
-          {/* SELECTORES DE CATEGORÍA Y MARCA */}
-          <div>
-              <label style={{fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '2px'}}>Categoría</label>
-              <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={{padding: '5px', borderColor: '#ddd', borderRadius: '4px'}}>
+          {/* 1. TÍTULO E ICONO (Izquierda) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '5px', marginRight: '10px' }}>
+             <span style={{ fontSize: '24px' }}>🔍</span>
+             <h3 style={{ margin: 0, color: '#2c3e50', fontSize: '20px' }}>Filtros</h3>
+          </div>
+
+          {/* 2. BUSCADOR (Ancho y central) */}
+          <div style={{ flex: 2, minWidth: '250px' }}>
+             <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '4px', color: '#333' }}>Buscar</label>
+             <input 
+                type="text" 
+                placeholder="Nombre del producto..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ width: '100%', padding: '8px 10px', border: '1px solid #ced4da', borderRadius: '4px', fontSize: '14px', outline: 'none' }}
+             />
+          </div>
+          
+          {/* 3. CATEGORÍA */}
+          <div style={{ flex: 1, minWidth: '120px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '4px', color: '#333' }}>Categoría</label>
+              <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ced4da', borderRadius: '4px', fontSize: '14px', outline: 'none' }}>
                   <option value="">Todas</option>
                   {categories.map(c => <option key={c} value={c as string}>{c}</option>)}
               </select>
           </div>
 
-          <div>
-              <label style={{fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '2px'}}>Marca</label>
-              <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)} style={{padding: '5px', borderColor: '#ddd', borderRadius: '4px'}}>
+          {/* 4. MARCA */}
+          <div style={{ flex: 1, minWidth: '120px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '4px', color: '#333' }}>Marca</label>
+              <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ced4da', borderRadius: '4px', fontSize: '14px', outline: 'none' }}>
                   <option value="">Todas</option>
                   {brands.map(b => <option key={b} value={b as string}>{b}</option>)}
               </select>
           </div>
 
-          {/* FILTRO DE PRECIO TIPO MERCADO LIBRE */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-             <label style={{fontSize: '12px', fontWeight: 'bold', marginBottom: '2px'}}>Precio | $</label>
+          {/* 5. PRECIO */}
+          <div style={{ minWidth: '180px' }}>
+             <label style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '4px', display: 'block', color: '#333' }}>Precio | $</label>
              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <input 
                     type="number" 
                     placeholder="Mínimo" 
                     value={minPriceInput}
                     onChange={(e) => setMinPriceInput(e.target.value)}
-                    style={{ width: '80px', padding: '6px', fontSize: '13px', border: '1px solid #ccc', borderRadius: '4px', background: 'white' }}
+                    style={{ width: '70px', padding: '8px', fontSize: '13px', border: '1px solid #ced4da', borderRadius: '4px' }}
                 />
-                <span style={{color: '#999'}}>-</span>
+                <span style={{ color: '#aaa' }}>-</span>
                 <input 
                     type="number" 
                     placeholder="Máximo" 
                     value={maxPriceInput}
                     onChange={(e) => setMaxPriceInput(e.target.value)}
-                    style={{ width: '80px', padding: '6px', fontSize: '13px', border: '1px solid #ccc', borderRadius: '4px', background: 'white' }}
+                    style={{ width: '70px', padding: '8px', fontSize: '13px', border: '1px solid #ced4da', borderRadius: '4px' }}
                 />
-                {/* BOTÓN FLECHA */}
                 <button 
                     onClick={applyPriceFilter}
                     style={{
-                        width: '26px', height: '26px', borderRadius: '50%', border: 'none',
-                        background: '#e0e0e0', color: '#666', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
+                        width: '30px', height: '30px', borderRadius: '50%', border: 'none',
+                        background: '#e9ecef', color: '#666', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '14px'
                     }}
-                    title="Aplicar filtro de precio"
+                    title="Aplicar"
                 >
                     {'>'}
                 </button>
              </div>
           </div>
           
-          <button onClick={clearFilters} style={{background: 'transparent', color: '#007bff', border: 'none', cursor: 'pointer', fontSize: '13px', textDecoration: 'underline'}}>
-              Limpiar filtros
-          </button>
+          {/* 6. LIMPIAR (A la derecha) */}
+          <div style={{ marginLeft: 'auto', paddingBottom: '8px' }}>
+            <button onClick={clearFilters} style={{ background: 'transparent', color: '#007bff', border: 'none', cursor: 'pointer', fontSize: '13px', textDecoration: 'none', fontWeight: '600' }}>
+                Limpiar filtros
+            </button>
+          </div>
       </div>
 
       {/* GRILLA DE PRODUCTOS FILTRADOS */}
