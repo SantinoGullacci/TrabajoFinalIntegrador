@@ -35,9 +35,13 @@ export default function Header({ onNavigate }: HeaderProps) {
     <header className="top-header">
       {/* IZQUIERDA: LOGO */}
       <div className="header-logo">
-        <span style={{ fontSize: '24px' }}>💇‍♂️</span>
+        <img 
+        src="/logoMC.png" 
+        alt="Logo Mara Cabo" 
+        className="header-logo-img" 
+    />
         <span>Mara Cabo <strong>Estilista</strong></span>
-      </div>
+      </div>  
 
       {/* DERECHA: USUARIO + DROPDOWN */}
       <div 
