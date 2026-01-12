@@ -1,3 +1,22 @@
+/* src/index.css */
+* {
+  box-sizing: border-box; /* Esto evita que el padding agrande los elementos */
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden; /* Fuerza a que no haya scroll horizontal */
+}
+
+#root {
+  min-height: 100vh; /* Asegura que la app ocupe al menos toda la pantalla */
+  display: flex;
+  flex-direction: column;
+}
+
 /* --- RESET BÁSICO Y FUENTES --- */
 :root {
   --primary: #007bff;
@@ -162,16 +181,6 @@ a:hover {
   display: flex;
   min-height: 100vh;
   background-color: #f0f2f5;
-}
-
-.sidebar {
-  width: 250px;
-  background-color: #343a40; /* Gris oscuro elegante */
-  color: white;
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
 }
 
 .sidebar h2 {
@@ -377,4 +386,130 @@ a:hover {
 }
 .arrow-icon.open {
   transform: rotate(180deg);
+}
+/* --- ESTILOS DE LA SIDEBAR (MODO DARK ELEGANT) --- */
+.admin-container {
+  display: flex;
+  min-height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.sidebar {
+  width: 250px; 
+  min-width: 250px;
+  /* CAMBIO: Color Gris Oscuro Elegante */
+  background-color: #212529; 
+  /* CAMBIO: Texto blanco */
+  color: #ecf0f1; 
+  border-right: 1px solid #444; /* Borde más sutil */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Estado COLAPSADO */
+.sidebar.collapsed {
+  width: 70px;
+  min-width: 70px;
+  padding: 20px 10px;
+}
+
+/* EL BOTÓN DE HAMBURGUESA */
+.menu-toggle-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-bottom: 20px;
+  align-self: flex-start;
+  /* SOLUCIÓN: Forzamos el color a blanco o gris claro */
+  color: #f8f9fa; 
+  transition: color 0.3s;
+}
+
+.menu-toggle-btn:hover {
+  color: #0d6efd; /* Un toquecito azul al pasar el mouse */
+}
+
+/* TÍTULO "NAVEGACIÓN" */
+.sidebar h2.btn-text {
+  color: #adb5bd !important; /* Gris clarito para el subtítulo */
+}
+
+/* BOTONES DEL MENÚ */
+.sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  /* Texto de los botones en gris claro */
+  color: #ced4da; 
+}
+
+/* HOVER (Al pasar el mouse) */
+.sidebar-btn:hover {
+  /* Fondo gris un poco más claro que la base */
+  background-color: #343a40; 
+  color: #ffffff;
+}
+
+/* ACTIVO (Botón seleccionado) */
+.sidebar-btn.active {
+  /* Azul intenso o el color de tu marca */
+  background-color: #0d6efd; 
+  color: white;
+  font-weight: bold;
+}
+
+/* Flechitas y textos secundarios */
+.sidebar .arrow-icon {
+  color: #adb5bd;
+}
+
+/* Ocultar texto suavemente cuando está colapsado */
+.sidebar.collapsed .btn-text {
+  opacity: 0;
+  visibility: hidden;
+  width: 0;
+}
+
+.sidebar.collapsed .arrow-icon {
+  display: none; 
+}
+
+.sidebar.collapsed .sidebar-btn {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+/* Asegúrate de que el contenedor alinee la imagen y el texto */
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espacio entre la imagen y el texto */
+  font-size: 1.2rem;
+}
+
+/* Estilos para la imagen del logo */
+.header-logo-img {
+  /* 1. Reducimos un poco la altura para que entre cómodamente */
+  height: 32px; 
+  width: auto;  /* Mantiene la proporción original */
+  
+  /* 2. Asegura que la imagen entera sea visible sin deformarse */
+  object-fit: contain; 
+  
+  /* 3. IMPORTANTE: Quitamos el redondeo para que se vea la forma real del escudo */
+  /* border-radius: 50%;  <-- ELIMINADA */
 }

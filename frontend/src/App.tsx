@@ -15,6 +15,7 @@ import ClientList from './components/ClientList';
 import UserProfile from './components/UserProfile';
 import Header from './components/Header'; 
 import Home from './components/Home';
+import Footer from './components/Footer';
 
 // --- IMPORTANTE: Solo importamos el botón encapsulado.
 import { ExportButtons } from './components/ExportButtons';
@@ -216,7 +217,7 @@ function Dashboard() {
   };
 
   // --- HELPER PARA BOTONES DEL SIDEBAR ---
-  const SidebarItem = ({ icon, text, tabName, onClick, isActive, hasSubmenu = false, isOpen = false }: any) => (
+  const SidebarItem = ({ icon, text, onClick, isActive, hasSubmenu = false, isOpen = false }: any) => (
     <button 
         className={`sidebar-btn ${isActive ? 'active' : ''}`} 
         onClick={onClick}
@@ -303,6 +304,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <div style={{ flex: '1 0 auto', width: '100%' }}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -310,6 +312,8 @@ export default function App() {
           <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
+        </div>
+        <div><Footer /></div>
       </AuthProvider>
     </BrowserRouter>
   );

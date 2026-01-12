@@ -29,7 +29,7 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    // --- ESTO ES LO QUE FALTABA ---
+
     securityAnswer: {
       type: DataTypes.STRING,
       allowNull: false,
