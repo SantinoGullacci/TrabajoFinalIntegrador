@@ -1,3 +1,4 @@
+import './App.css';
 import { useEffect, useState, type PropsWithChildren } from 'react';
 import { Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 import AppointmentForm from './components/AppointmentForm';
@@ -5,7 +6,6 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage'; 
 import ResetPasswordPage from './pages/ResetPasswordPage'; 
 import { AuthProvider, useAuth } from './context/AuthContext';
-import './App.css';
 import ServiceManager from './components/ServiceManager';
 import ProductManager from './components/ProductManager'
 import Shop from './components/Shop'; 
@@ -17,13 +17,15 @@ import Header from './components/Header';
 import Home from './components/Home';
 import Footer from './components/Footer';
 
-// --- IMPORTANTE: Solo importamos el botón encapsulado.
+// --- CORRECCIÓN AQUÍ: Usamos 'import type' y quitamos 'User' que no se usaba ---
+import type { Appointment } from './types/models';
+
 import { ExportButtons } from './components/ExportButtons';
 
 // --- COMPONENTE DASHBOARD ---
 function Dashboard() {
   const { user } = useAuth();
-  const [appointments, setAppointments] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [statsTrigger, setStatsTrigger] = useState(0);
   
   // Estado de navegación
@@ -68,7 +70,7 @@ function Dashboard() {
   const startEditing = (appt: any) => { setEditingApptId(appt.id); setEditData({ date: appt.date, time: appt.time }); };
   const cancelEditing = () => { setEditingApptId(null); setEditData({ date: '', time: '' }); };
 
-  // --- LÓGICA REAL DE GUARDADO (Recuperada del Upstream) ---
+  // --- LÓGICA REAL DE GUARDADO ---
   const saveEdit = async (id: number) => {
     const selectedDate = new Date(`${editData.date}T${editData.time}`);
     const now = new Date();
@@ -120,7 +122,7 @@ function Dashboard() {
     } catch (error) { alert('Error de conexión'); }
   };
 
-  // --- COMPONENTE LISTA REUTILIZABLE (Con lógica de edición) ---
+  // --- COMPONENTE LISTA REUTILIZABLE ---
   const AppointmentsList = ({ list }: { list: any[] }) => (
     <div style={{ display: 'grid', gap: '10px', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
         {list.length === 0 ? <p style={{color: '#666', fontStyle: 'italic'}}>No hay turnos en esta sección.</p> : null}
@@ -169,7 +171,6 @@ function Dashboard() {
                 <>
                     <AppointmentForm onAppointmentCreated={() => { fetchAppointments(); refreshStats(); }} refreshTrigger={statsTrigger} />
                     <br/>
-                    {/* USO DEL COMPONENTE DE REPORTES (ADMIN) */}
                     <ExportButtons data={appointments} label="turnos_admin" />
                     <AppointmentsList list={appointments} />
                 </>
@@ -194,7 +195,6 @@ function Dashboard() {
             case 'pendientes': return (
                 <>
                     <h2 style={{borderBottom: '2px solid #ffc107'}}>⏳ Pendientes</h2>
-                    {/* USO DEL COMPONENTE DE REPORTES (PENDIENTES) */}
                     <ExportButtons data={pendingList} label="mis_pendientes" />
                     <AppointmentsList list={pendingList} />
                 </>
@@ -203,7 +203,6 @@ function Dashboard() {
             case 'historial': return (
                 <>
                     <h2 style={{borderBottom: '2px solid #28a745'}}>📜 Historial</h2>
-                    {/* USO DEL COMPONENTE DE REPORTES (HISTORIAL) */}
                     <ExportButtons data={historyList} label="mi_historial" />
                     <AppointmentsList list={historyList} />
                 </>
@@ -305,15 +304,18 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <div style={{ flex: '1 0 auto', width: '100%' }}>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="*" element={<Navigate to="/login" />} />
-        </Routes>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </Routes>
         </div>
-        <div><Footer /></div>
+        
+        {/* Footer sin div extra para que el Sticky funcione bien */}
+        <Footer />
+        
       </AuthProvider>
     </BrowserRouter>
   );
