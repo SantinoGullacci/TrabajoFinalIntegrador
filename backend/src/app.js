@@ -11,4 +11,12 @@ app.use(express.json());
 
 app.use('/', routes); // <--- 2. Le decimos al server que use nuestras rutas
 
+server.use(cors({
+  origin: [
+    'http://localhost:5173',               // Para que te ande en tu casa
+    'https://trabajo-final-integrador-pi.vercel.app/'    // <-- LA URL QUE TE DIO VERCEL
+  ],
+  credentials: true
+}));
+
 module.exports = app;
