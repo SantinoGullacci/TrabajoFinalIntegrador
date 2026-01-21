@@ -1,22 +1,27 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-const routes = require('./routes/index'); // <--- 1. Importamos las rutas
+const routes = require('./routes/index'); 
 
-const app = express();
+const app = express(); // Aquí definiste 'app'
 
-app.use(morgan('dev'));
-app.use(cors());
-app.use(express.json());
+app.name = 'API';
 
-app.use('/', routes); // <--- 2. Le decimos al server que use nuestras rutas
+// --- 1. MIDDLEWARES (Configuración) ---
 
-server.use(cors({
+// IMPORTANTE: El CORS va primero, antes que las rutas.
+app.use(cors({
   origin: [
-    'http://localhost:5173',               // Para que te ande en tu casa
-    'https://trabajo-final-integrador-pi.vercel.app/'    // <-- LA URL QUE TE DIO VERCEL
+    'http://localhost:5173',                         // Tu local
+    'https://trabajo-final-integrador-pi.vercel.app' // Tu Vercel (SIN barra al final)
   ],
   credentials: true
 }));
+
+app.use(morgan('dev'));
+app.use(express.json());
+
+// --- 2. RUTAS ---
+app.use('/', routes); 
 
 module.exports = app;
