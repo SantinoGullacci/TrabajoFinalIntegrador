@@ -19,7 +19,7 @@ export default function ClientList() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const fetchUsers = () => {
-    fetch('${API_URL}/users')
+    fetch(`${API_URL}/users`)
       .then(res => res.json())
       .then(data => { setUsers(data); setLoading(false); })
       .catch(err => { console.error(err); setLoading(false); });

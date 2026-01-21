@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 interface User { id: string; name: string; }
 interface Service { id: number; name: string; price: number; }
@@ -19,9 +20,9 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger =
   // 2. Agregamos refreshTrigger al useEffect para recargar la lista de servicios
   useEffect(() => {
     if (user?.role === 'admin') {
-      fetch('${API_URL}/users').then(res => res.json()).then(data => setUsers(data));
+      fetch(`${API_URL}/users`).then(res => res.json()).then(data => setUsers(data));
     }
-    fetch('${API_URL}/services').then(res => res.json()).then(data => setServices(data));
+    fetch(`${API_URL}/services`).then(res => res.json()).then(data => setServices(data));
   }, [user, refreshTrigger]); // <--- ¡AQUÍ ESTÁ LA CLAVE!
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +53,7 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger =
     }
 
     try {
-      const response = await fetch('${API_URL}/appointments', {
+      const response = await fetch(`${API_URL}/appointments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

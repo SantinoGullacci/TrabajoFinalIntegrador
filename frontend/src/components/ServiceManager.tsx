@@ -18,7 +18,7 @@ export default function ServiceManager({ onUpdate }: { onUpdate: () => void }) {
 
   const fetchServices = async () => {
     try {
-      const res = await fetch('${API_URL}/services');
+      const res = await fetch(`${API_URL}/services`);
       const data = await res.json();
       setServices(data);
     } catch (error) { console.error(error); }
@@ -29,7 +29,7 @@ export default function ServiceManager({ onUpdate }: { onUpdate: () => void }) {
     if (!formData.name || formData.price <= 0) return alert('Datos inválidos');
 
     try {
-      let url = '${API_URL}/services';
+      let url = `${API_URL}/services`;
       let method = 'POST';
 
       if (editingId !== null) {

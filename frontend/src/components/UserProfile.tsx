@@ -31,7 +31,7 @@ export default function UserProfile() {
   useEffect(() => {
     if (user) {
       setLoading(true);
-      fetch('${API_URL}/users')
+      fetch(`${API_URL}/users`)
         .then(res => res.json())
         .then((users: UserData[]) => {
             const myUser = users.find(u => u.id === user.id);

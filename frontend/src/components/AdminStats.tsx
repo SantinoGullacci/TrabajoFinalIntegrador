@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { API_URL } from '../config';
 
 interface Stats {
   money: number;
@@ -20,7 +21,7 @@ export default function AdminStats({ refreshTrigger }: AdminStatsProps) {
 
   useEffect(() => {
     // Esta función se ejecutará al inicio Y cada vez que 'refreshTrigger' cambie
-    fetch('${API_URL}/reports/stats')
+    fetch(`${API_URL}/reports/stats`)
       .then(res => res.json())
       .then(data => setStats(data))
       .catch(err => console.error(err));

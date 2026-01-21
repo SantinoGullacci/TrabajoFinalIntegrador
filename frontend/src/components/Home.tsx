@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 // INFO POR DEFECTO (Se muestra mientras carga)
 const DEFAULT_INFO = {
@@ -18,7 +19,7 @@ export default function Home() {
 
   // 1. CARGAR DATOS (GET)
   useEffect(() => {
-    fetch('${API_URL}/businessInfo')
+    fetch(`${API_URL}/businessInfo`)
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data) setInfo(data);
@@ -29,7 +30,7 @@ export default function Home() {
   // 2. GUARDAR CAMBIOS (PUT)
   const handleSave = async () => {
     try {
-      const res = await fetch('${API_URL}/businessInfo', {
+      const res = await fetch(`${API_URL}/businessInfo`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(info)

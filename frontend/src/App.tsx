@@ -44,7 +44,7 @@ function Dashboard() {
   const refreshStats = () => setStatsTrigger(prev => prev + 1);
 
   const fetchAppointments = () => {
-    let url = '${API_URL}/appointments';
+    let url = `${API_URL}/appointments`;
     if (user?.role === 'client') {
         url = `${API_URL}/appointments?userId=${user.id}`;
     }

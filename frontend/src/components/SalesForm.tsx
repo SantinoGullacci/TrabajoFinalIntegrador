@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 interface User { id: string; name: string; }
 interface Product { id: number; name: string; price: number; stock: number; }
@@ -14,8 +15,8 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
 
   // 2. Agregamos refreshTrigger al useEffect para recargar stock
   useEffect(() => {
-    fetch('${API_URL}/users').then(res => res.json()).then(data => setUsers(data));
-    fetch('${API_URL}/products').then(res => res.json()).then(data => setProducts(data));
+    fetch(`${API_URL}/users`).then(res => res.json()).then(data => setUsers(data));
+    fetch(`${API_URL}/products`).then(res => res.json()).then(data => setProducts(data));
   }, [refreshTrigger]); // <--- ¡AQUÍ ESTÁ LA CLAVE!
 
   const selectedProduct = products.find(p => p.id === Number(selectedProductId));
@@ -44,7 +45,7 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
     };
 
     try {
-      const res = await fetch('${API_URL}/orders', {
+      const res = await fetch(`${API_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)

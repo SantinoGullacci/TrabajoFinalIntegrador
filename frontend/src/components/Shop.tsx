@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 interface Product {
   id: number;
@@ -65,7 +66,7 @@ export default function Shop() {
 
   const fetchProducts = async () => {
     try {
-        const res = await fetch('${API_URL}/products');
+        const res = await fetch(`${API_URL}/products`);
         const data = await res.json();
         setProducts(data);
     } catch (error) { console.error(error); }
@@ -114,7 +115,7 @@ export default function Shop() {
     };
 
     try {
-      const res = await fetch('${API_URL}/orders', {
+      const res = await fetch(`${API_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)

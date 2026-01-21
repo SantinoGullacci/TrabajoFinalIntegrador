@@ -33,7 +33,7 @@ export default function ProductManager({ onUpdate }: { onUpdate: () => void }) {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('${API_URL}/products');
+      const res = await fetch(`${API_URL}/products`);
       const data = await res.json();
       setProducts(data);
 
@@ -51,7 +51,7 @@ export default function ProductManager({ onUpdate }: { onUpdate: () => void }) {
     if (!formData.name || formData.price <= 0) return alert('Datos inválidos');
 
     try {
-      let url = '${API_URL}/products';
+      let url = `${API_URL}/products`;
       let method = 'POST';
 
       if (editingId !== null) {
