@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 interface Service {
   id: number;
@@ -17,7 +18,7 @@ export default function ServiceManager({ onUpdate }: { onUpdate: () => void }) {
 
   const fetchServices = async () => {
     try {
-      const res = await fetch('http://localhost:3001/services');
+      const res = await fetch('${API_URL}/services');
       const data = await res.json();
       setServices(data);
     } catch (error) { console.error(error); }
@@ -28,11 +29,11 @@ export default function ServiceManager({ onUpdate }: { onUpdate: () => void }) {
     if (!formData.name || formData.price <= 0) return alert('Datos inválidos');
 
     try {
-      let url = 'http://localhost:3001/services';
+      let url = '${API_URL}/services';
       let method = 'POST';
 
       if (editingId !== null) {
-        url = `http://localhost:3001/services/${editingId}`;
+        url = `${API_URL}/services/${editingId}`;
         method = 'PUT';
       }
 
@@ -55,7 +56,7 @@ export default function ServiceManager({ onUpdate }: { onUpdate: () => void }) {
 
   const handleDelete = async (id: number) => {
     if (!confirm('¿Seguro que quieres borrar este servicio?')) return;
-    await fetch(`http://localhost:3001/services/${id}`, { method: 'DELETE' });
+    await fetch(`${API_URL}/services/${id}`, { method: 'DELETE' });
     fetchServices();
     onUpdate(); // <--- 3. AVISAMOS AQUÍ (Al borrar)
   };

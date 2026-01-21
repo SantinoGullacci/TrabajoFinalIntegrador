@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 interface User {
   id: string;
@@ -18,7 +19,7 @@ export default function ClientList() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const fetchUsers = () => {
-    fetch('http://localhost:3001/users')
+    fetch('${API_URL}/users')
       .then(res => res.json())
       .then(data => { setUsers(data); setLoading(false); })
       .catch(err => { console.error(err); setLoading(false); });
@@ -30,7 +31,7 @@ export default function ClientList() {
   const handleDelete = async (id: string) => {
     if (!confirm('⚠️ ¿Estás seguro de eliminar este usuario?')) return;
     try {
-      const res = await fetch(`http://localhost:3001/users/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
       if (res.ok) {
         alert('✅ Usuario eliminado');
         setUsers(prev => prev.filter(u => u.id !== id));
@@ -46,7 +47,7 @@ export default function ClientList() {
     if (!editingUser) return;
 
     try {
-      const res = await fetch(`http://localhost:3001/users/${editingUser.id}`, {
+      const res = await fetch(`${API_URL}/users/${editingUser.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -18,7 +18,7 @@ export default function Home() {
 
   // 1. CARGAR DATOS (GET)
   useEffect(() => {
-    fetch('http://localhost:3001/businessInfo')
+    fetch('${API_URL}/businessInfo')
       .then(res => res.ok ? res.json() : null)
       .then(data => {
         if (data) setInfo(data);
@@ -29,7 +29,7 @@ export default function Home() {
   // 2. GUARDAR CAMBIOS (PUT)
   const handleSave = async () => {
     try {
-      const res = await fetch('http://localhost:3001/businessInfo', {
+      const res = await fetch('${API_URL}/businessInfo', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(info)

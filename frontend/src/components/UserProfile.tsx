@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../config';
 
 interface UserData {
   id: string;
@@ -30,7 +31,7 @@ export default function UserProfile() {
   useEffect(() => {
     if (user) {
       setLoading(true);
-      fetch('http://localhost:3001/users')
+      fetch('${API_URL}/users')
         .then(res => res.json())
         .then((users: UserData[]) => {
             const myUser = users.find(u => u.id === user.id);
@@ -52,7 +53,7 @@ export default function UserProfile() {
     e.preventDefault();
     if (!user) return;
     try {
-      const res = await fetch(`http://localhost:3001/users/${user.id}`, {
+      const res = await fetch(`${API_URL}/users/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: formData.name, phone: formData.phone })
@@ -76,7 +77,7 @@ export default function UserProfile() {
     if (passData.newPassword.length < 6) return alert('❌ Mínimo 6 caracteres');
 
     try {
-        const res = await fetch(`http://localhost:3001/auth/change-password/${user.id}`, {
+        const res = await fetch(`${API_URL}/auth/change-password/${user.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

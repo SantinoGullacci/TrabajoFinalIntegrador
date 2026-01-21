@@ -20,7 +20,7 @@ export default function AdminStats({ refreshTrigger }: AdminStatsProps) {
 
   useEffect(() => {
     // Esta función se ejecutará al inicio Y cada vez que 'refreshTrigger' cambie
-    fetch('http://localhost:3001/reports/stats')
+    fetch('${API_URL}/reports/stats')
       .then(res => res.json())
       .then(data => setStats(data))
       .catch(err => console.error(err));

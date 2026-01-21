@@ -16,6 +16,7 @@ import UserProfile from './components/UserProfile';
 import Header from './components/Header'; 
 import Home from './components/Home';
 import Footer from './components/Footer';
+import { API_URL } from './config';
 
 // --- CORRECCIÓN AQUÍ: Usamos 'import type' y quitamos 'User' que no se usaba ---
 import type { Appointment } from './types/models';
@@ -43,9 +44,9 @@ function Dashboard() {
   const refreshStats = () => setStatsTrigger(prev => prev + 1);
 
   const fetchAppointments = () => {
-    let url = 'http://localhost:3001/appointments';
+    let url = '${API_URL}/appointments';
     if (user?.role === 'client') {
-        url = `http://localhost:3001/appointments?userId=${user.id}`;
+        url = `${API_URL}/appointments?userId=${user.id}`;
     }
     fetch(url)
       .then((res) => { if (!res.ok) throw new Error("Error server"); return res.json(); })
@@ -82,7 +83,7 @@ function Dashboard() {
     if (hour < 9 || hour >= 18) return alert('Horario de 09:00 a 18:00 hs.');
 
     try {
-      const res = await fetch(`http://localhost:3001/appointments/${id}`, {
+      const res = await fetch(`${API_URL}/appointments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editData)
@@ -99,7 +100,7 @@ function Dashboard() {
   const completeAppointment = async (id: number) => {
     if (!confirm('¿Marcar turno como REALIZADO y cobrar?')) return;
     try {
-      const res = await fetch(`http://localhost:3001/appointments/${id}`, {
+      const res = await fetch(`${API_URL}/appointments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'completed' }) 
@@ -112,7 +113,7 @@ function Dashboard() {
   const cancelAppointment = async (id: number) => {
     if (!confirm('¿Seguro que deseas cancelar?')) return;
     try {
-      const res = await fetch(`http://localhost:3001/appointments/${id}`, {
+      const res = await fetch(`${API_URL}/appointments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'cancelled', requestingRole: user?.role }) 

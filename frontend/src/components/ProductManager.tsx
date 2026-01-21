@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 interface Product {
   id: number;
@@ -32,7 +33,7 @@ export default function ProductManager({ onUpdate }: { onUpdate: () => void }) {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://localhost:3001/products');
+      const res = await fetch('${API_URL}/products');
       const data = await res.json();
       setProducts(data);
 
@@ -50,11 +51,11 @@ export default function ProductManager({ onUpdate }: { onUpdate: () => void }) {
     if (!formData.name || formData.price <= 0) return alert('Datos inválidos');
 
     try {
-      let url = 'http://localhost:3001/products';
+      let url = '${API_URL}/products';
       let method = 'POST';
 
       if (editingId !== null) {
-        url = `http://localhost:3001/products/${editingId}`;
+        url = `${API_URL}/products/${editingId}`;
         method = 'PUT';
       }
 
@@ -77,7 +78,7 @@ export default function ProductManager({ onUpdate }: { onUpdate: () => void }) {
 
   const handleDelete = async (id: number) => {
     if (!confirm('¿Seguro que quieres borrar este producto?')) return;
-    await fetch(`http://localhost:3001/products/${id}`, { method: 'DELETE' });
+    await fetch(`${API_URL}/products/${id}`, { method: 'DELETE' });
     fetchProducts();
     onUpdate();
   };
