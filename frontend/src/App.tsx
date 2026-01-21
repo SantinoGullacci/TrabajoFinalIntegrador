@@ -223,19 +223,23 @@ function Dashboard() {
   };
 
   // --- HELPER PARA BOTONES DEL SIDEBAR ---
-  const SidebarItem = ({ icon, text, onClick, isActive, hasSubmenu = false, isOpen = false }: any) => (
-    <button 
-        className={`sidebar-btn ${isActive ? 'active' : ''}`} 
-        onClick={onClick}
-        title={isCollapsed ? text : ''}
-    >
-        <span style={{ fontSize: '1.2rem' }}>{icon}</span>
-        <span className="btn-text">{text}</span>
-        {hasSubmenu && !isCollapsed && (
-            <span className={`arrow-icon ${isOpen ? 'open' : ''}`} style={{ fontSize: '10px', marginLeft: 'auto' }}>▼</span>
-        )}
-    </button>
-  );
+const SidebarItem = ({ icon, text, onClick, isActive, hasSubmenu = false, isOpen = false }: any) => (
+  <button
+      className={`sidebar-btn ${isActive ? 'active' : ''}`}
+      onClick={onClick}
+      title={isCollapsed ? text : ''} // El title ayuda a ver el texto completo al pasar el mouse si está colapsado
+  >
+      {/* Quitamos el style={{ fontSize: '1.2rem' }} y lo manejamos por CSS si hace falta */}
+      <span className="sidebar-icon" style={{ fontSize: '1.2rem' }}>{icon}</span>
+
+      <span className="btn-text">{text}</span>
+
+      {hasSubmenu && !isCollapsed && (
+          // Quitamos el style en línea de aquí, ya lo maneja la clase .arrow-icon en el CSS
+          <span className={`arrow-icon ${isOpen ? 'open' : ''}`}>▼</span>
+      )}
+  </button>
+);
 
   return (
     <div className="admin-container">
