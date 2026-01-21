@@ -156,4 +156,33 @@ router.put('/businessInfo', async (req, res) => {
   }
 });
 
+router.get('/', async (req, res) => {
+  const { userId } = req.query; // Recibimos el ID del usuario si es cliente
+
+  try {
+    // Definimos el filtro: Si hay userId, filtramos por él. Si no, traemos todo.
+    const whereCondition = userId ? { UserId: userId } : {};
+
+    const orders = await Order.findAll({
+      where: whereCondition,
+      order: [['createdAt', 'DESC']], // Las más nuevas primero
+      include: [
+        { 
+          model: User, // Para saber quién compró (si está registrado)
+          attributes: ['name', 'email'] 
+        }, 
+        { 
+          model: OrderItem, // Para saber QUÉ compró
+          include: [{ model: Product, attributes: ['name'] }] // El nombre del producto
+        }
+      ]
+    });
+
+    res.json(orders);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error al obtener historial" });
+  }
+});
+
 module.exports = router;

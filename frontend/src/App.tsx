@@ -17,6 +17,7 @@ import Header from './components/Header';
 import Home from './components/Home';
 import Footer from './components/Footer';
 import { API_URL } from './config';
+import OrderHistory from './components/OrderHistory';
 
 // --- CORRECCIÓN AQUÍ: Usamos 'import type' y quitamos 'User' que no se usaba ---
 import type { Appointment } from './types/models';
@@ -34,6 +35,9 @@ function Dashboard() {
 
   // Estado para el sub-menú de turnos
   const [isTurnosMenuOpen, setIsTurnosMenuOpen] = useState(false); 
+
+  // Estado para el sub-menú de tienda
+  const [isTiendaMenuOpen, setIsTiendaMenuOpen] = useState(false);
   
   // Estado para colapsar la barra lateral (Sidebar)
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -180,6 +184,7 @@ function Dashboard() {
             case 'servicios': return <ServiceManager onUpdate={refreshStats} />;
             case 'productos': return <ProductManager onUpdate={refreshStats} />;
             case 'tienda': return <Shop />;
+            case 'historial_ventas': return <OrderHistory />;
             case 'clientes': return <ClientList />;
             default: return <AdminStats refreshTrigger={statsTrigger} />;
         }
@@ -210,6 +215,7 @@ function Dashboard() {
             );
             
             case 'tienda': return <Shop />;
+            case 'mis_compras': return <OrderHistory />;
             case 'perfil': return <UserProfile />;
             default: return <AppointmentsList list={appointments} />;
         }
@@ -248,10 +254,24 @@ function Dashboard() {
                 <SidebarItem icon="🏠" text="Inicio" tabName="home" isActive={activeTab === 'home'} onClick={() => setActiveTab('home')} />
                 <SidebarItem icon="📊" text="Resumen" tabName="inicio" isActive={activeTab === 'inicio'} onClick={() => setActiveTab('inicio')} />
                 <SidebarItem icon="📅" text="Turnos" tabName="turnos" isActive={activeTab === 'turnos'} onClick={() => setActiveTab('turnos')} />
-                <SidebarItem icon="💰" text="Ventas" tabName="ventas" isActive={activeTab === 'ventas'} onClick={() => setActiveTab('ventas')} />
                 <SidebarItem icon="✂️" text="Servicios" tabName="servicios" isActive={activeTab === 'servicios'} onClick={() => setActiveTab('servicios')} />
-                <SidebarItem icon="🧴" text="Productos" tabName="productos" isActive={activeTab === 'productos'} onClick={() => setActiveTab('productos')} />
-                <SidebarItem icon="🛍️" text="Tienda" tabName="tienda" isActive={activeTab === 'tienda'} onClick={() => setActiveTab('tienda')} />
+
+                <SidebarItem 
+                  icon="💈" text="Administrar Tienda" isActive={['tienda','productos','ventas','historial_ventas'].includes(activeTab)}
+                  hasSubmenu={true} isOpen={isTiendaMenuOpen}
+                  onClick={() => {
+                      if (isCollapsed) { setIsCollapsed(false); setIsTiendaMenuOpen(true); } 
+                      else { setIsTiendaMenuOpen(!isTiendaMenuOpen); }
+                  }}
+                />
+
+                <div className={`submenu-container ${isTiendaMenuOpen && !isCollapsed ? 'open' : ''}`} style={{ overflow: 'hidden', maxHeight: isTiendaMenuOpen && !isCollapsed ? '150px' : '0', transition: 'max-height 0.3s ease', paddingLeft: '20px' }}>
+                  <SidebarItem icon="🛍️" text="Tienda" tabName="tienda" isActive={activeTab === 'tienda'} onClick={() => setActiveTab('tienda')} />
+                  <SidebarItem icon="🧴" text="Administrar Productos" tabName="productos" isActive={activeTab === 'productos'} onClick={() => setActiveTab('productos')} />
+                  <SidebarItem icon="💰" text="Asignar Ventas" tabName="ventas" isActive={activeTab === 'ventas'} onClick={() => setActiveTab('ventas')} />
+                  <SidebarItem icon="📜" text="Historial Ventas" tabName="historial_ventas" isActive={activeTab === 'historial_ventas'} onClick={() => setActiveTab('historial_ventas')} />
+                </div>
+
                 <SidebarItem icon="👤" text="Clientes" tabName="clientes" isActive={activeTab === 'clientes'} onClick={() => setActiveTab('clientes')} />
             </>
         )}
@@ -274,6 +294,7 @@ function Dashboard() {
                     <SidebarItem icon="📜" text="Historial" isActive={activeTab === 'historial'} onClick={() => setActiveTab('historial')} />
                 </div>
                 <SidebarItem icon="🛍️" text="Tienda" tabName="tienda" isActive={activeTab === 'tienda'} onClick={() => setActiveTab('tienda')} />
+                <SidebarItem icon="📜" text="Mis Compras" tabName="mis_compras" isActive={activeTab === 'mis_compras'} onClick={() => setActiveTab('mis_compras')} />
                 <SidebarItem icon="👤" text="Mi Perfil" tabName="perfil" isActive={activeTab === 'perfil'} onClick={() => setActiveTab('perfil')} />
             </>
         )}
