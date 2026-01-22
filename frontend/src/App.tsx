@@ -18,7 +18,7 @@ import Home from './components/Home';
 import Footer from './components/Footer';
 import { API_URL } from './config';
 import OrderHistory from './components/OrderHistory';
-import TextAnimation from './components/TextAnimation';
+import TextAnimation from './components/TextAnimation'; // Asegúrate de tener este o usa texto normal
 
 // --- CORRECCIÓN AQUÍ: Usamos 'import type' y quitamos 'User' que no se usaba ---
 import type { Appointment } from './types/models';
@@ -43,6 +43,9 @@ function Dashboard() {
   // Estado para colapsar la barra lateral (Sidebar)
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // Estado para menú móvil
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const [editingApptId, setEditingApptId] = useState<number | null>(null);
   const [editData, setEditData] = useState({ date: '', time: '' });
 
@@ -66,10 +69,16 @@ function Dashboard() {
       }
   }, [user]);
 
-  // Función para alternar la barra lateral
+  // Función para alternar la barra lateral desktop
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
     if (!isCollapsed) setIsTurnosMenuOpen(false);
+  };
+
+  // Función unificada de navegación (Maneja el cierre del menú móvil)
+  const handleNavigation = (tabName: string) => {
+    setActiveTab(tabName);
+    setIsMobileMenuOpen(false); // <--- IMPORTANTE: Cierra el menú al navegar
   };
 
   // --- FUNCIONES DE TURNOS ---
@@ -223,21 +232,25 @@ function Dashboard() {
     }
   };
 
-// --- HELPER PARA BOTONES DEL SIDEBAR (VERSIÓN FINAL INTELIGENTE) ---
+  // --- HELPER PARA BOTONES DEL SIDEBAR ---
   const SidebarItem = ({ icon, text, onClick, isActive, hasSubmenu = false, isOpen = false }: any) => (
     <button 
         className={`sidebar-btn ${isActive ? 'active' : ''}`} 
-        onClick={onClick}
-        title={text} // Tooltip nativo
+        onClick={(e) => {
+            if (onClick) onClick(e);
+            // Si NO tiene submenú, cerramos el menú móvil al hacer click
+            if (!hasSubmenu) setIsMobileMenuOpen(false);
+        }}
+        title={text}
     >
         <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{icon}</span>
         
-        {/* REEMPLAZAMOS EL HTML MANUAL POR EL COMPONENTE INTELIGENTE */}
-        {/* Él se encarga de decidir si se mueve o no */}
+        {/* Aquí usas tu OverflowText o texto normal si quitaste el componente */}
+        {/* Si OverflowText da error, usa: <div className="btn-text-container"><span className="btn-text-content">{text}</span></div> */}
         <TextAnimation text={text} />
 
         {hasSubmenu && !isCollapsed && (
-            <span className={`arrow-icon ${isOpen ? 'open' : ''}`}>▼</span>
+             <span className={`arrow-icon ${isOpen ? 'open' : ''}`}>▼</span>
         )}
     </button>
   );
@@ -245,9 +258,18 @@ function Dashboard() {
   return (
     <div className="admin-container">
       
-      {/* 1. SIDEBAR DINÁMICA */}
-      <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-        <button onClick={toggleSidebar} className="menu-toggle-btn">☰</button>
+      {/* 1. SIDEBAR DINÁMICA (CON SOPORTE MÓVIL) */}
+      <div className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        
+        {/* Botón "X" para cerrar solo en móvil */}
+        <button 
+            className="mobile-close-btn" 
+            onClick={() => setIsMobileMenuOpen(false)}
+        >
+            ✕
+        </button>
+
+        <button onClick={toggleSidebar} className="menu-toggle-btn desktop-only">☰</button>
 
         <h2 className="btn-text" style={{fontSize: '14px', textTransform: 'uppercase', color: '#6c757d', letterSpacing: '1px', marginBottom: '20px', whiteSpace: 'nowrap'}}>
             Navegación
@@ -256,10 +278,10 @@ function Dashboard() {
         {/* MENÚ DE ADMIN */}
         {user?.role === 'admin' && (
             <>
-                <SidebarItem icon="🏠" text="Inicio" tabName="home" isActive={activeTab === 'home'} onClick={() => setActiveTab('home')} />
-                <SidebarItem icon="📊" text="Resumen" tabName="inicio" isActive={activeTab === 'inicio'} onClick={() => setActiveTab('inicio')} />
-                <SidebarItem icon="📅" text="Turnos" tabName="turnos" isActive={activeTab === 'turnos'} onClick={() => setActiveTab('turnos')} />
-                <SidebarItem icon="✂️" text="Servicios" tabName="servicios" isActive={activeTab === 'servicios'} onClick={() => setActiveTab('servicios')} />
+                <SidebarItem icon="🏠" text="Inicio" tabName="home" isActive={activeTab === 'home'} onClick={() => handleNavigation('home')} />
+                <SidebarItem icon="📊" text="Resumen" tabName="inicio" isActive={activeTab === 'inicio'} onClick={() => handleNavigation('inicio')} />
+                <SidebarItem icon="📅" text="Turnos" tabName="turnos" isActive={activeTab === 'turnos'} onClick={() => handleNavigation('turnos')} />
+                <SidebarItem icon="✂️" text="Servicios" tabName="servicios" isActive={activeTab === 'servicios'} onClick={() => handleNavigation('servicios')} />
 
                 <SidebarItem 
                   icon="💈" text="Administrar Tienda" isActive={['tienda','productos','ventas','historial_ventas'].includes(activeTab)}
@@ -270,21 +292,21 @@ function Dashboard() {
                   }}
                 />
 
-                <div className={`submenu-container ${isTiendaMenuOpen && !isCollapsed ? 'open' : ''}`} style={{ overflow: 'hidden', maxHeight: isTiendaMenuOpen && !isCollapsed ? '250px' : '0', transition: 'max-height 0.3s ease', paddingLeft: '20px' }}>
-                  <SidebarItem icon="🛍️" text="Tienda" tabName="tienda" isActive={activeTab === 'tienda'} onClick={() => setActiveTab('tienda')} />
-                  <SidebarItem icon="🧴" text="Administrar Productos" tabName="productos" isActive={activeTab === 'productos'} onClick={() => setActiveTab('productos')} />
-                  <SidebarItem icon="💰" text="Asignar Ventas" tabName="ventas" isActive={activeTab === 'ventas'} onClick={() => setActiveTab('ventas')} />
-                  <SidebarItem icon="📜" text="Historial Ventas" tabName="historial_ventas" isActive={activeTab === 'historial_ventas'} onClick={() => setActiveTab('historial_ventas')} />
+                <div className={`submenu-container ${isTiendaMenuOpen && !isCollapsed ? 'open' : ''}`} style={{ overflow: 'hidden', maxHeight: isTiendaMenuOpen && !isCollapsed ? '300px' : '0', transition: 'max-height 0.3s ease', paddingLeft: '20px' }}>
+                  <SidebarItem icon="🛍️" text="Tienda" tabName="tienda" isActive={activeTab === 'tienda'} onClick={() => handleNavigation('tienda')} />
+                  <SidebarItem icon="🧴" text="Administrar Productos" tabName="productos" isActive={activeTab === 'productos'} onClick={() => handleNavigation('productos')} />
+                  <SidebarItem icon="💰" text="Asignar Ventas" tabName="ventas" isActive={activeTab === 'ventas'} onClick={() => handleNavigation('ventas')} />
+                  <SidebarItem icon="📜" text="Historial Ventas" tabName="historial_ventas" isActive={activeTab === 'historial_ventas'} onClick={() => handleNavigation('historial_ventas')} />
                 </div>
 
-                <SidebarItem icon="👤" text="Clientes" tabName="clientes" isActive={activeTab === 'clientes'} onClick={() => setActiveTab('clientes')} />
+                <SidebarItem icon="👤" text="Clientes" tabName="clientes" isActive={activeTab === 'clientes'} onClick={() => handleNavigation('clientes')} />
             </>
         )}
 
         {/* MENÚ DE CLIENTE */}
         {user?.role === 'client' && (
             <>
-                <SidebarItem icon="🏠" text="Inicio" tabName="home" isActive={activeTab === 'home'} onClick={() => setActiveTab('home')} />
+                <SidebarItem icon="🏠" text="Inicio" tabName="home" isActive={activeTab === 'home'} onClick={() => handleNavigation('home')} />
                 <SidebarItem 
                     icon="📅" text="Mis Turnos" isActive={['agendar', 'pendientes', 'historial'].includes(activeTab)} 
                     hasSubmenu={true} isOpen={isTurnosMenuOpen}
@@ -294,23 +316,25 @@ function Dashboard() {
                     }} 
                 />
                 <div className={`submenu-container ${isTurnosMenuOpen && !isCollapsed ? 'open' : ''}`} style={{ overflow: 'hidden', maxHeight: isTurnosMenuOpen && !isCollapsed ? '200px' : '0', transition: 'max-height 0.3s ease', paddingLeft: '20px' }}>
-                    <SidebarItem icon="➕" text="Agendar" isActive={activeTab === 'agendar'} onClick={() => setActiveTab('agendar')} />
-                    <SidebarItem icon="⏳" text="Pendientes" isActive={activeTab === 'pendientes'} onClick={() => setActiveTab('pendientes')} />
-                    <SidebarItem icon="📜" text="Historial" isActive={activeTab === 'historial'} onClick={() => setActiveTab('historial')} />
+                    <SidebarItem icon="➕" text="Agendar" isActive={activeTab === 'agendar'} onClick={() => handleNavigation('agendar')} />
+                    <SidebarItem icon="⏳" text="Pendientes" isActive={activeTab === 'pendientes'} onClick={() => handleNavigation('pendientes')} />
+                    <SidebarItem icon="📜" text="Historial" isActive={activeTab === 'historial'} onClick={() => handleNavigation('historial')} />
                 </div>
-                <SidebarItem icon="🛍️" text="Tienda" tabName="tienda" isActive={activeTab === 'tienda'} onClick={() => setActiveTab('tienda')} />
-                <SidebarItem icon="📜" text="Mis Compras" tabName="mis_compras" isActive={activeTab === 'mis_compras'} onClick={() => setActiveTab('mis_compras')} />
-                <SidebarItem icon="👤" text="Mi Perfil" tabName="perfil" isActive={activeTab === 'perfil'} onClick={() => setActiveTab('perfil')} />
+                <SidebarItem icon="🛍️" text="Tienda" tabName="tienda" isActive={activeTab === 'tienda'} onClick={() => handleNavigation('tienda')} />
+                <SidebarItem icon="📜" text="Mis Compras" tabName="mis_compras" isActive={activeTab === 'mis_compras'} onClick={() => handleNavigation('mis_compras')} />
+                <SidebarItem icon="👤" text="Mi Perfil" tabName="perfil" isActive={activeTab === 'perfil'} onClick={() => handleNavigation('perfil')} />
             </>
         )}
       </div>
 
       {/* 2. ZONA DERECHA (CONTENIDO) */}
       <div className="main-content-wrapper" style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
-         <Header onNavigate={(tab) => {
-             if (['agendar', 'pendientes', 'historial'].includes(tab)) setIsTurnosMenuOpen(true);
-             setActiveTab(tab);
-         }} />
+         
+         {/* HEADER UNIFICADO */}
+         <Header 
+            onNavigate={handleNavigation} 
+            onToggleMobileMenu={() => setIsMobileMenuOpen(true)} 
+         />
 
          <div className="content-area">
             {renderContent()}

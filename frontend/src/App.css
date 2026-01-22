@@ -577,46 +577,122 @@ a:hover {
 .sidebar.collapsed .sidebar-btn { justify-content: center; padding: 15px 0; }
 
 /* =========================================
-   ESTILOS PARA MÓVILES (Pantallas < 768px)
+   ESTILOS MOBILE FIRST (Responsive)
    ========================================= */
+
+/* Por defecto (Desktop), ocultamos los elementos móviles */
+.mobile-menu-trigger { display: none; }
+.mobile-close-btn { display: none; }
+.desktop-only { display: block; }
+
+/* --- REGLAS PARA MÓVILES (Pantallas < 768px) --- */
 @media (max-width: 768px) {
 
-  /* 1. Cambiar el layout principal de lado a lado -> arriba a abajo */
+  /* 1. LAYOUT PRINCIPAL */
   .admin-container {
-    flex-direction: column !important; /* Sidebar arriba, contenido abajo */
-  }
-
-  /* 2. La barra lateral ocupa todo el ancho en móvil */
-  .sidebar {
-    width: 100% !important;
-    height: auto !important;
-    min-height: auto;
-    position: relative; /* Dejamos de fijarla si estaba fija */
-  }
-
-  /* 3. El contenido principal */
-  .main-content-wrapper {
-    padding: 10px !important; /* Menos relleno para ganar espacio */
-    width: 100% !important;
-  }
-
-  /* 4. Tablas con scroll horizontal (Para que no rompan la pantalla) */
-  table {
-    display: block;
-    width: 100%;
-    overflow-x: auto; /* Permite deslizar con el dedo si la tabla es ancha */
-    white-space: nowrap;
-  }
-
-  /* 5. Ajustar tarjetas del Dashboard */
-  .dashboard-cards {
-    flex-direction: column; /* Una tarjeta abajo de la otra */
-  }
-
-  /* 6. Header (Logo y Usuario) */
-  .top-header {
     flex-direction: column;
-    gap: 10px;
+  }
+  
+  .main-content-wrapper {
+    padding: 0 !important; /* Quitamos padding del wrapper */
+    padding-top: 70px !important; /* Espacio para el Header fijo */
+    width: 100vw;
+  }
+
+  .content-area {
+    padding: 15px; /* Padding interno para el contenido */
+  }
+
+  /* 2. HEADER FIJO Y DISTRIBUIDO */
+  .top-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 0 15px; /* Menos padding lateral */
+    justify-content: space-between; /* Izq: Menu, Centro: Logo, Der: User */
+  }
+
+  /* Botón de Hamburguesa (Izquierda) */
+  .mobile-menu-trigger {
+    display: block;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    color: #333;
+  }
+
+  /* Logo (Centro) */
+  .header-logo {
+    font-size: 16px; /* Texto un poco más chico */
     text-align: center;
+  }
+  .logo-text {
+    /* Opcional: Ocultar texto "Estilista" si es muy largo, o achicarlo */
+    font-size: 14px;
+  }
+
+  /* Usuario (Derecha) */
+  .header-user-info {
+    display: none; /* Ocultamos el nombre escrito, solo dejamos el avatar */
+  }
+  .header-user-section {
+    gap: 0;
+  }
+
+  /* 3. SIDEBAR: PANTALLA COMPLETA */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100% !important; /* Ocupa todo el ancho */
+    height: 100vh;          /* Ocupa todo el alto */
+    z-index: 2000;          /* Por encima del Header */
+    padding-top: 60px;      /* Espacio para el botón de cerrar */
+    
+    /* ANIMACIÓN DE ENTRADA */
+    transform: translateX(-100%); /* Oculto a la izquierda */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Clase que agrega React cuando abres el menú */
+  .sidebar.mobile-open {
+    transform: translateX(0); /* Se desliza a la vista */
+    box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+  }
+
+  /* Elementos internos de la sidebar */
+  .desktop-only { display: none; } /* Ocultamos la hamburguesa interna vieja */
+  
+  /* Botón X gigante para cerrar */
+  .mobile-close-btn {
+    display: block;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+  }
+
+  /* Ajuste de botones grandes para dedos */
+  .sidebar-btn {
+    padding: 15px 20px; /* Más gorditos */
+    font-size: 18px;    /* Letra más grande */
+  }
+
+  /* 4. MODALES Y TABLAS */
+  .image-modal-content {
+    max-width: 95%;
+  }
+  
+  /* Ajuste para que las tablas no rompan el diseño */
+  div[style*="display: grid"] {
+     grid-template-columns: 1fr !important; /* Tarjetas de turnos una abajo de otra */
   }
 }
