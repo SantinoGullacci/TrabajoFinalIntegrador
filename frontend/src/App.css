@@ -513,3 +513,65 @@ a:hover {
   /* 3. IMPORTANTE: Quitamos el redondeo para que se vea la forma real del escudo */
   /* border-radius: 50%;  <-- ELIMINADA */
 }
+
+/* =========================================
+   ESTILOS DE SIDEBAR FINAL (Inteligente v2)
+   ========================================= */
+/* 1. SIDEBAR CONFIGURACIÓN GENERAL (Igual que antes) */
+.sidebar {
+  width: 260px; min-width: 260px;
+  background-color: #212529; color: #ecf0f1; 
+  border-right: 1px solid #444; padding: 20px 15px;
+  display: flex; flex-direction: column; transition: width 0.3s ease;
+  overflow-y: auto; overflow-x: hidden; height: 100vh;
+}
+.sidebar.collapsed { width: 80px; min-width: 80px; padding: 20px 10px; }
+
+/* 2. BOTÓN DE LA SIDEBAR (Igual que antes) */
+.sidebar-btn {
+  display: flex; align-items: center; width: 100%;             
+  background: none; border: none; padding: 12px 10px;
+  margin-bottom: 5px; cursor: pointer; border-radius: 8px;
+  transition: all 0.2s; color: #ced4da; text-align: left;
+  overflow: hidden; gap: 12px;
+}
+.sidebar-btn:hover { background-color: #343a40; color: #ffffff; }
+.sidebar-btn.active { background-color: #0d6efd; color: white; font-weight: bold; }
+
+/* 3. CONTENEDOR DEL TEXTO (La máscara) */
+.btn-text-container {
+  flex: 1;               /* Ocupa el espacio disponible */
+  overflow: hidden;      /* Esconde lo que sobra */
+  white-space: nowrap;   /* Una sola línea */
+  /* Quitamos la máscara de gradiente para que se vea mejor el efecto */
+}
+
+/* 4. EL TEXTO ANIMADO (Aquí está el cambio IMPORTANTE) */
+.btn-text-content {
+  display: inline-block;
+  /* Por defecto NO tiene transición */
+}
+
+/* SOLO si React detecta que es largo, le agrega esta clase */
+.btn-text-content.is-overflowing {
+  transition: transform 4s linear; /* Habilitamos la animación suave */
+}
+
+/* SOLO si es largo Y pasamos el mouse, se mueve */
+.sidebar-btn:hover .btn-text-content.is-overflowing {
+  /* Movemos el texto a la izquierda para ver el final */
+  transform: translateX(-60%); 
+}
+
+/* 5. LA FLECHA (Fija, igual que antes) */
+.arrow-icon {
+  flex-shrink: 0; font-size: 10px; transition: transform 0.3s ease;
+  margin-left: auto; width: 15px; text-align: center;
+}
+.arrow-icon.open { transform: rotate(180deg); }
+
+/* 6. OTROS (Igual que antes) */
+.menu-toggle-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-bottom: 20px; color: #f8f9fa; padding-left: 5px; }
+.sidebar h2 { font-size: 12px; text-transform: uppercase; color: #adb5bd; letter-spacing: 1px; margin-bottom: 15px; border-bottom: 1px solid #495057; padding-bottom: 10px; }
+.sidebar.collapsed .btn-text-container, .sidebar.collapsed .arrow-icon, .sidebar.collapsed h2 { display: none; }
+.sidebar.collapsed .sidebar-btn { justify-content: center; padding: 15px 0; }

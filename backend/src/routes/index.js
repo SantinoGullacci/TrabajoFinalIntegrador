@@ -1,14 +1,14 @@
 const { Router } = require('express');
-// IMPORTANTE: Aquí estaba el error, getUsers solo debe aparecer una vez en esta línea
-const { getUsers, updateUser } = require('../controllers/userController'); 
+// 1. AQUÍ ESTABA EL ERROR PRINCIPAL: Faltaban User, Order y OrderItem
+const { User, Service, Product, Order, OrderItem, BusinessInfo } = require('../db'); 
+
+// Controllers
+const { getUsers, updateUser, deleteUser } = require('../controllers/userController'); 
 const { createAppointment, getAppointments, updateAppointment } = require('../controllers/appointmentController');
-const { Service, Product } = require('../db'); 
 const { register, login, resetPassword, changePassword } = require('../controllers/authController');
 const { getProducts, createProduct, deleteProduct } = require('../controllers/productController');
-const { createOrder, getOrdersByUser } = require('../controllers/orderController');
+const { getOrdersByUser } = require('../controllers/orderController');
 const { getAdminStats } = require('../controllers/statsController');
-const { deleteUser } = require('../controllers/userController');
-const { BusinessInfo } = require('../db');
 
 const router = Router();
 
@@ -79,12 +79,10 @@ router.get('/products', getProducts);
 router.post('/products', createProduct);
 router.delete('/products/:id', deleteProduct);
 
-// Actualizar Producto
 router.put('/products/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { name, price, stock, imageUrl, category, brand } = req.body;
-
         const product = await Product.findByPk(id);
 
         if (!product) return res.status(404).json({ message: "Producto no encontrado" });
@@ -97,7 +95,6 @@ router.put('/products/:id', async (req, res) => {
         product.brand = brand; 
 
         await product.save();
-
         res.json({ message: "Producto actualizado", product });
     } catch (error) {
         console.error(error);
@@ -105,75 +102,68 @@ router.put('/products/:id', async (req, res) => {
     }
 });
 
-// --- RUTAS DE ORDENES ---
-router.post('/orders', createOrder);
-router.get('/orders/:userId', getOrdersByUser);
+// --- RUTAS DE ORDENES (VENTAS) ---
+router.post('/orders', async (req, res) => {
+  const { total, items, clientName, userId } = req.body; 
 
-// --- RUTAS DE REPORTES ---
-router.get('/reports/stats', getAdminStats);
-
-// 1. RUTA GET: Obtener la info
-router.get('/businessInfo', async (req, res) => {
   try {
-    let info = await BusinessInfo.findOne();
+    // Verificar stock
+    for (const item of items) {
+      const product = await Product.findByPk(item.productId);
+      if (!product || product.stock < item.quantity) {
+        return res.status(400).json({ error: `Sin stock suficiente para ${product ? product.name : 'producto'}` });
+      }
+    }
 
-    // Si no existe, la creamos con TUS DATOS REALES
-    if (!info) {
-      info = await BusinessInfo.create({
-        name: "Mara Cabo Estilista",
-        description: "Colorista, cortes en rulos, lacios y ondas, peinadora profesional, experta en decoloración, diseño en color y corte.",
-        phone: "+54 9 291 422-1908",
-        hours: "Mar a Sab: 09:00 - 18:00 hs",
-        address: "Rivadavia 1537"
+    // Crear la orden vinculada al Usuario (Si userId existe)
+    const newOrder = await Order.create({
+      total,
+      date: new Date(),
+      status: 'completed',
+      clientName: clientName, 
+      UserId: userId || null 
+    });
+
+    // Crear items y descontar stock
+    for (const item of items) {
+      await OrderItem.create({
+        OrderId: newOrder.id,
+        ProductId: item.productId,
+        quantity: item.quantity,
+        price: item.price
       });
+
+      const product = await Product.findByPk(item.productId);
+      await product.decrement('stock', { by: item.quantity });
     }
 
-    res.json(info);
+    res.status(200).json({ message: "Venta registrada con éxito", order: newOrder });
+
   } catch (error) {
-    res.status(500).send("Error al obtener info del negocio");
+    console.error(error);
+    res.status(500).json({ error: "Error al registrar la venta" });
   }
 });
 
-// 2. RUTA PUT: Actualizar la info (Solo admin debería poder, pero por ahora lo dejamos abierto)
-router.put('/businessInfo', async (req, res) => {
-  try {
-    const { name, description, phone, hours, address } = req.body;
-
-    // Buscamos la info existente
-    let info = await BusinessInfo.findOne();
-
-    if (info) {
-      // Si existe, actualizamos
-      await info.update({ name, description, phone, hours, address });
-      res.json(info);
-    } else {
-      // Si por alguna razón no existe, creamos
-      const newInfo = await BusinessInfo.create(req.body);
-      res.json(newInfo);
-    }
-  } catch (error) {
-    res.status(500).send("Error al guardar info");
-  }
-});
-
-router.get('/', async (req, res) => {
-  const { userId } = req.query; // Recibimos el ID del usuario si es cliente
+// --- HISTORIAL DE ORDENES ---
+// 2. CORREGIDO: Cambié '/' por '/orders' para que coincida con el Frontend
+router.get('/orders', async (req, res) => {
+  const { userId } = req.query; 
 
   try {
-    // Definimos el filtro: Si hay userId, filtramos por él. Si no, traemos todo.
     const whereCondition = userId ? { UserId: userId } : {};
 
     const orders = await Order.findAll({
       where: whereCondition,
-      order: [['createdAt', 'DESC']], // Las más nuevas primero
+      order: [['createdAt', 'DESC']],
       include: [
         { 
-          model: User, // Para saber quién compró (si está registrado)
+          model: User, 
           attributes: ['name', 'email'] 
         }, 
         { 
-          model: OrderItem, // Para saber QUÉ compró
-          include: [{ model: Product, attributes: ['name'] }] // El nombre del producto
+          model: OrderItem, 
+          include: [{ model: Product, attributes: ['name'] }] 
         }
       ]
     });
@@ -182,6 +172,44 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error al obtener historial" });
+  }
+});
+
+// --- RUTAS DE REPORTES ---
+router.get('/reports/stats', getAdminStats);
+
+// --- INFO DEL NEGOCIO ---
+router.get('/businessInfo', async (req, res) => {
+  try {
+    let info = await BusinessInfo.findOne();
+    if (!info) {
+      info = await BusinessInfo.create({
+        name: "Mara Cabo Estilista",
+        description: "Estilista Profesional",
+        phone: "+54 9 291 422-1908",
+        hours: "Mar a Sab: 09:00 - 18:00 hs",
+        address: "Rivadavia 1537"
+      });
+    }
+    res.json(info);
+  } catch (error) {
+    res.status(500).send("Error al obtener info del negocio");
+  }
+});
+
+router.put('/businessInfo', async (req, res) => {
+  try {
+    const { name, description, phone, hours, address } = req.body;
+    let info = await BusinessInfo.findOne();
+    if (info) {
+      await info.update({ name, description, phone, hours, address });
+      res.json(info);
+    } else {
+      const newInfo = await BusinessInfo.create(req.body);
+      res.json(newInfo);
+    }
+  } catch (error) {
+    res.status(500).send("Error al guardar info");
   }
 });
 

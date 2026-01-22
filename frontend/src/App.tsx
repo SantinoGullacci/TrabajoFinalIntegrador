@@ -18,6 +18,7 @@ import Home from './components/Home';
 import Footer from './components/Footer';
 import { API_URL } from './config';
 import OrderHistory from './components/OrderHistory';
+import TextAnimation from './components/TextAnimation';
 
 // --- CORRECCIÓN AQUÍ: Usamos 'import type' y quitamos 'User' que no se usaba ---
 import type { Appointment } from './types/models';
@@ -222,24 +223,24 @@ function Dashboard() {
     }
   };
 
-  // --- HELPER PARA BOTONES DEL SIDEBAR ---
-const SidebarItem = ({ icon, text, onClick, isActive, hasSubmenu = false, isOpen = false }: any) => (
-  <button
-      className={`sidebar-btn ${isActive ? 'active' : ''}`}
-      onClick={onClick}
-      title={isCollapsed ? text : ''} // El title ayuda a ver el texto completo al pasar el mouse si está colapsado
-  >
-      {/* Quitamos el style={{ fontSize: '1.2rem' }} y lo manejamos por CSS si hace falta */}
-      <span className="sidebar-icon" style={{ fontSize: '1.2rem' }}>{icon}</span>
+// --- HELPER PARA BOTONES DEL SIDEBAR (VERSIÓN FINAL INTELIGENTE) ---
+  const SidebarItem = ({ icon, text, onClick, isActive, hasSubmenu = false, isOpen = false }: any) => (
+    <button 
+        className={`sidebar-btn ${isActive ? 'active' : ''}`} 
+        onClick={onClick}
+        title={text} // Tooltip nativo
+    >
+        <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{icon}</span>
+        
+        {/* REEMPLAZAMOS EL HTML MANUAL POR EL COMPONENTE INTELIGENTE */}
+        {/* Él se encarga de decidir si se mueve o no */}
+        <TextAnimation text={text} />
 
-      <span className="btn-text">{text}</span>
-
-      {hasSubmenu && !isCollapsed && (
-          // Quitamos el style en línea de aquí, ya lo maneja la clase .arrow-icon en el CSS
-          <span className={`arrow-icon ${isOpen ? 'open' : ''}`}>▼</span>
-      )}
-  </button>
-);
+        {hasSubmenu && !isCollapsed && (
+            <span className={`arrow-icon ${isOpen ? 'open' : ''}`}>▼</span>
+        )}
+    </button>
+  );
 
   return (
     <div className="admin-container">
@@ -269,7 +270,7 @@ const SidebarItem = ({ icon, text, onClick, isActive, hasSubmenu = false, isOpen
                   }}
                 />
 
-                <div className={`submenu-container ${isTiendaMenuOpen && !isCollapsed ? 'open' : ''}`} style={{ overflow: 'hidden', maxHeight: isTiendaMenuOpen && !isCollapsed ? '150px' : '0', transition: 'max-height 0.3s ease', paddingLeft: '20px' }}>
+                <div className={`submenu-container ${isTiendaMenuOpen && !isCollapsed ? 'open' : ''}`} style={{ overflow: 'hidden', maxHeight: isTiendaMenuOpen && !isCollapsed ? '250px' : '0', transition: 'max-height 0.3s ease', paddingLeft: '20px' }}>
                   <SidebarItem icon="🛍️" text="Tienda" tabName="tienda" isActive={activeTab === 'tienda'} onClick={() => setActiveTab('tienda')} />
                   <SidebarItem icon="🧴" text="Administrar Productos" tabName="productos" isActive={activeTab === 'productos'} onClick={() => setActiveTab('productos')} />
                   <SidebarItem icon="💰" text="Asignar Ventas" tabName="ventas" isActive={activeTab === 'ventas'} onClick={() => setActiveTab('ventas')} />

@@ -1,23 +1,37 @@
 import { useState, useEffect } from 'react';
 import { API_URL } from '../config';
 
-interface User { id: string; name: string; }
+// Agregamos email y role a la interfaz para mostrar más info en el select
+interface User { id: string; name: string; email?: string; role?: string; }
 interface Product { id: number; name: string; price: number; stock: number; }
 
-// 1. Recibimos refreshTrigger
 export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleCompleted: () => void, refreshTrigger: number }) {
   const [users, setUsers] = useState<User[]>([]);
-  const [clientName, setClientName] = useState('');
-  const [isGuest, setIsGuest] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
+  
+  // ESTADOS PARA LA SELECCIÓN DE USUARIO
+  const [selectedUserId, setSelectedUserId] = useState<string>(''); // Guardará el ID o "guest"
+  const [guestName, setGuestName] = useState(''); // Solo se usa si es guest
+
+  // ESTADOS DEL PRODUCTO
   const [selectedProductId, setSelectedProductId] = useState('');
   const [quantity, setQuantity] = useState(1);
 
-  // 2. Agregamos refreshTrigger al useEffect para recargar stock
   useEffect(() => {
-    fetch(`${API_URL}/users`).then(res => res.json()).then(data => setUsers(data));
+    // 1. Cargar Usuarios y filtrar solo los clientes
+    fetch(`${API_URL}/users`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          // Intentamos filtrar por rol, si no tiene rol, mostramos todos
+          const clients = data.filter((u: any) => u.role === 'client' || !u.role);
+          setUsers(clients);
+        }
+      });
+
+    // 2. Cargar Productos
     fetch(`${API_URL}/products`).then(res => res.json()).then(data => setProducts(data));
-  }, [refreshTrigger]); // <--- ¡AQUÍ ESTÁ LA CLAVE!
+  }, [refreshTrigger]);
 
   const selectedProduct = products.find(p => p.id === Number(selectedProductId));
   const total = selectedProduct ? selectedProduct.price * quantity : 0;
@@ -25,20 +39,27 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProduct) return;
+    if (!selectedUserId) return alert("Por favor selecciona un cliente.");
 
-    let userId = null;
+    let finalUserId = null;
     let finalClientName = null;
 
-    if (isGuest) {
-      finalClientName = clientName;
+    // LÓGICA CRUCIAL PARA EL HISTORIAL
+    if (selectedUserId === 'guest') {
+       // Si es invitado, mandamos nombre pero userId null
+       if (!guestName.trim()) return alert("Escribe el nombre del cliente de paso.");
+       finalClientName = guestName;
+       finalUserId = null;
     } else {
-      const userFound = users.find(u => u.name.toLowerCase() === clientName.toLowerCase());
-      if (!userFound) return alert('Usuario no encontrado. ¿Querías usar "Cliente sin cuenta"?');
-      userId = userFound.id;
+       // Si es registrado, MANDAMOS SU ID (Esto hace que aparezca en su historial)
+       finalUserId = selectedUserId;
+       // Opcional: mandamos el nombre también por si acaso, pero el ID es lo que importa
+       const userObj = users.find(u => u.id === selectedUserId);
+       finalClientName = userObj?.name;
     }
 
     const orderData = {
-      userId,
+      userId: finalUserId,       // <--- AQUÍ ESTÁ LA MAGIA
       clientName: finalClientName,
       total,
       items: [{ productId: selectedProduct.id, quantity, price: selectedProduct.price }]
@@ -54,7 +75,11 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
       if (res.ok) {
         alert('✅ Venta registrada con éxito');
         onSaleCompleted(); 
-        setClientName(''); setIsGuest(false); setQuantity(1); setSelectedProductId('');
+        // Resetear formulario
+        setGuestName(''); 
+        setSelectedUserId(''); 
+        setQuantity(1); 
+        setSelectedProductId('');
       } else {
         const err = await res.json();
         alert('Error: ' + err.error);
@@ -65,42 +90,67 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
   return (
     <div style={{ border: '1px solid #444', padding: '20px', borderRadius: '10px', marginBottom: '20px', background: '#222', color: 'white' }}>
       <h3>🛒 Asignar Venta (Admin)</h3>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '350px' }}>
-        <div style={{ background: '#333', padding: '10px', borderRadius: '5px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', marginBottom: '10px', color: '#17a2b8' }}>
-              <input type="checkbox" checked={isGuest} onChange={(e) => { setIsGuest(e.target.checked); setClientName(''); }} /> Cliente sin cuenta
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '400px' }}>
+        
+        {/* SECCIÓN DE CLIENTE MEJORADA */}
+        <div style={{ background: '#333', padding: '15px', borderRadius: '5px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', color: '#17a2b8', fontWeight: 'bold' }}>
+                1. ¿A quién le vendes?
             </label>
-            <label>Nombre del Cliente:</label>
-            {isGuest ? (
-              <input type="text" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Ej: Cliente de paso..." required style={{ padding: '8px', width: '93%' }} />
-            ) : (
-              <>
-                <input list="sale-user-options" value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Buscar usuario..." required style={{ padding: '8px', width: '93%' }} />
-                <datalist id="sale-user-options">{users.map(u => <option key={u.id} value={u.name} />)}</datalist>
-              </>
+            
+            <select 
+                value={selectedUserId} 
+                onChange={(e) => setSelectedUserId(e.target.value)}
+                required
+                style={{ padding: '10px', width: '100%', marginBottom: '10px' }}
+            >
+                <option value="">-- Seleccionar Cliente --</option>
+                {users.map(u => (
+                    <option key={u.id} value={u.id}>
+                        👤 {u.name} {u.email ? `(${u.email})` : ''}
+                    </option>
+                ))}
+                <option value="guest">⚡ Cliente de paso (Sin cuenta)</option>
+            </select>
+
+            {/* Solo aparece si eliges "Cliente de paso" */}
+            {selectedUserId === 'guest' && (
+                <input 
+                    type="text" 
+                    value={guestName} 
+                    onChange={(e) => setGuestName(e.target.value)} 
+                    placeholder="Escribe el nombre del cliente..." 
+                    required 
+                    style={{ padding: '10px', width: '94%', border: '1px solid #17a2b8' }} 
+                />
             )}
         </div>
 
-        <label>Producto:</label>
-        <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} required style={{ padding: '8px' }}>
-          <option value="">Seleccionar...</option>
-          {products.map(p => (
-            <option key={p.id} value={p.id} disabled={p.stock <= 0}>{p.name} (${p.price}) - Stock: {p.stock}</option>
-          ))}
-        </select>
+        {/* SECCIÓN DE PRODUCTO */}
+        <div>
+            <label style={{ display: 'block', marginBottom: '5px' }}>2. Producto:</label>
+            <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} required style={{ padding: '10px', width: '100%' }}>
+            <option value="">Seleccionar...</option>
+            {products.map(p => (
+                <option key={p.id} value={p.id} disabled={p.stock <= 0}>{p.name} (${p.price}) - Stock: {p.stock}</option>
+            ))}
+            </select>
+        </div>
 
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <div style={{ flex: 1 }}>
                 <label>Cantidad:</label>
-                <input type="number" min="1" max={selectedProduct?.stock || 1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} required style={{ padding: '8px', width: '100%' }} />
+                <input type="number" min="1" max={selectedProduct?.stock || 1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} required style={{ padding: '10px', width: '100%' }} />
             </div>
             <div style={{ flex: 1, textAlign: 'right' }}>
                 <label>Total:</label>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#4CAF50' }}>${total.toLocaleString()}</div>
+                <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#4CAF50' }}>${total.toLocaleString()}</div>
             </div>
         </div>
 
-        <button type="submit" style={{ marginTop: '10px', padding: '10px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer', fontSize: '16px', borderRadius: '5px' }}>Confirmar Venta</button>
+        <button type="submit" style={{ marginTop: '10px', padding: '12px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer', fontSize: '16px', borderRadius: '5px', fontWeight: 'bold' }}>
+            Confirmar Venta
+        </button>
       </form>
     </div>
   );
