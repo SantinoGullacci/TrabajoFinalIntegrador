@@ -575,3 +575,48 @@ a:hover {
 .sidebar h2 { font-size: 12px; text-transform: uppercase; color: #adb5bd; letter-spacing: 1px; margin-bottom: 15px; border-bottom: 1px solid #495057; padding-bottom: 10px; }
 .sidebar.collapsed .btn-text-container, .sidebar.collapsed .arrow-icon, .sidebar.collapsed h2 { display: none; }
 .sidebar.collapsed .sidebar-btn { justify-content: center; padding: 15px 0; }
+
+/* =========================================
+   ESTILOS PARA MÓVILES (Pantallas < 768px)
+   ========================================= */
+@media (max-width: 768px) {
+
+  /* 1. Cambiar el layout principal de lado a lado -> arriba a abajo */
+  .admin-container {
+    flex-direction: column !important; /* Sidebar arriba, contenido abajo */
+  }
+
+  /* 2. La barra lateral ocupa todo el ancho en móvil */
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto;
+    position: relative; /* Dejamos de fijarla si estaba fija */
+  }
+
+  /* 3. El contenido principal */
+  .main-content-wrapper {
+    padding: 10px !important; /* Menos relleno para ganar espacio */
+    width: 100% !important;
+  }
+
+  /* 4. Tablas con scroll horizontal (Para que no rompan la pantalla) */
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto; /* Permite deslizar con el dedo si la tabla es ancha */
+    white-space: nowrap;
+  }
+
+  /* 5. Ajustar tarjetas del Dashboard */
+  .dashboard-cards {
+    flex-direction: column; /* Una tarjeta abajo de la otra */
+  }
+
+  /* 6. Header (Logo y Usuario) */
+  .top-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}
