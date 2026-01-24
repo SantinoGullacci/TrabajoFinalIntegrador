@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
+import InstagramFeed from './InstagramFeed';
 
 // INFO POR DEFECTO (Se muestra mientras carga)
 const DEFAULT_INFO = {
@@ -119,6 +120,8 @@ export default function Home() {
         </div>
 
       </div>
+      {/* INSTAGRAM FEED */}
+      <InstagramFeed />
     </div>
   );
 }

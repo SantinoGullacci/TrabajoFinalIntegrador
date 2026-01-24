@@ -696,3 +696,101 @@ a:hover {
      grid-template-columns: 1fr !important; /* Tarjetas de turnos una abajo de otra */
   }
 }
+
+/* =========================================
+   CARRUSEL INFINITO (INSTAGRAM STYLE)
+   ========================================= */
+.instagram-section {
+  margin-top: 60px;
+  overflow: hidden; 
+  width: 100%;
+  position: relative;
+
+  /* --- LA MAGIA DEL FADE OUT --- */
+  /* Esto crea un degradado de transparencia en los bordes */
+  /* Sintaxis: Transparente -> Visible (5%) -> Visible (95%) -> Transparente */
+  
+  -webkit-mask-image: linear-gradient(
+    to right, 
+    transparent 0%, 
+    black 5%, 
+    black 95%, 
+    transparent 100%
+  );
+  
+  mask-image: linear-gradient(
+    to right, 
+    transparent 0%, 
+    black 5%, 
+    black 95%, 
+    transparent 100%
+  );
+}
+
+.carousel-track {
+  display: flex;
+  width: calc(250px * 14); /* 250px por foto * cantidad total (aprox) */
+  animation: scroll 40s linear infinite; /* 40 segundos en dar la vuelta */
+}
+
+.carousel-slide {
+  width: 250px;
+  height: 250px;
+  flex-shrink: 0;
+  padding: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.carousel-slide:hover {
+  transform: scale(1.05); /* Efecto zoom al pasar el mouse */
+  z-index: 10;
+}
+
+.insta-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* El icono de Instagram superpuesto */
+.insta-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 12px;
+  margin: 10px; /* Para respetar el padding */
+}
+
+.carousel-slide:hover .insta-overlay {
+  opacity: 1;
+}
+
+/* Animación Clave */
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-250px * 7)); } /* Mueve la mitad de las fotos */
+}
+
+/* En móvil, que se vea más rápido o fotos más chicas */
+@media (max-width: 768px) {
+  .carousel-slide {
+    width: 180px;
+    height: 180px;
+  }
+  .carousel-track {
+    animation: scroll 20s linear infinite;
+  }
+  @keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-180px * 7)); }
+  }
+}
