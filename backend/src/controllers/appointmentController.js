@@ -64,7 +64,7 @@ const getAppointments = async (req, res) => {
         let queryOptions = {
             include: [
                 { model: User, attributes: ['name', 'email'] },
-                { model: Service, attributes: ['name', 'price'] }
+                { model: Service, attributes: ['name', 'price', 'duration'] }
             ],
             order: [['date', 'ASC'], ['time', 'ASC']] // De paso, los ordenamos por fecha
         };

@@ -18,6 +18,7 @@ module.exports = (sequelize) => {
     duration: {
       type: DataTypes.INTEGER, // Duración en minutos
       allowNull: false,
+      defaultValue: 30
     },
     description: {
       type: DataTypes.TEXT,
