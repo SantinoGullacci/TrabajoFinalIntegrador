@@ -34,6 +34,11 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
       defaultValue: 'peluqueria' // Valor por defecto para no romper usuarios viejos
+    },
+    
+    notes: {
+      type: DataTypes.TEXT, // Usamos TEXT para que puedas escribir mucho
+      allowNull: true
     }
   }, { timestamps: false });
 

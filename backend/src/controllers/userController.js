@@ -2,19 +2,23 @@ const { User } = require('../db');
 
 // PUT /users/:id
 const updateUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name, phone, avatar, role } = req.body; // <--- AGREGAR role
+    const { id } = req.params;
+    // 1. Agregamos 'notes' a la lista de cosas que recibimos
+    const { name, phone, role, notes } = req.body; 
 
+    try {
         const user = await User.findByPk(id);
         if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
 
-        if (name) user.name = name;
-        if (phone) user.phone = phone;
-        if (avatar) user.avatar = avatar;
-        if (role) user.role = role; // <--- PERMITIR CAMBIO DE ROL
+        // 2. Actualizamos el usuario con los datos nuevos
+        // (Si no envían 'notes', se mantiene lo que había o se ignora si es undefined)
+        await user.update({ 
+            name: name || user.name, 
+            phone: phone || user.phone, 
+            role: role || user.role,
+            notes: notes !== undefined ? notes : user.notes // Actualizamos notas si vienen
+        });
 
-        await user.save();
         res.json({ message: "Usuario actualizado", user });
     } catch (error) {
         res.status(500).json({ error: error.message });
