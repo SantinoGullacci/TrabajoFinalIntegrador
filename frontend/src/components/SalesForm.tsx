@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { API_URL } from '../config';
 
-// Agregamos email y role a la interfaz para mostrar más info en el select
+// Interfaces
 interface User { id: string; name: string; email?: string; role?: string; }
 interface Product { id: number; name: string; price: number; stock: number; }
 
@@ -9,21 +9,21 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
   const [users, setUsers] = useState<User[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   
-  // ESTADOS PARA LA SELECCIÓN DE USUARIO
-  const [selectedUserId, setSelectedUserId] = useState<string>(''); // Guardará el ID o "guest"
-  const [guestName, setGuestName] = useState(''); // Solo se usa si es guest
-
-  // ESTADOS DEL PRODUCTO
+  // ESTADOS FORMULARIO
+  const [isGuest, setIsGuest] = useState(false); // <--- NUEVO: Checkbox como en Turnos
+  const [selectedUserId, setSelectedUserId] = useState<string>(''); 
+  const [guestName, setGuestName] = useState('');
+  
   const [selectedProductId, setSelectedProductId] = useState('');
   const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // 1. Cargar Usuarios y filtrar solo los clientes
+    // 1. Cargar Usuarios (Filtrar clientes)
     fetch(`${API_URL}/users`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          // Intentamos filtrar por rol, si no tiene rol, mostramos todos
           const clients = data.filter((u: any) => u.role === 'client' || !u.role);
           setUsers(clients);
         }
@@ -39,33 +39,33 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProduct) return;
-    if (!selectedUserId) return alert("Por favor selecciona un cliente.");
 
     let finalUserId = null;
     let finalClientName = null;
 
-    // LÓGICA CRUCIAL PARA EL HISTORIAL
-    if (selectedUserId === 'guest') {
-       // Si es invitado, mandamos nombre pero userId null
+    // LÓGICA UNIFICADA CON TURNOS
+    if (isGuest) {
+       // Caso Invitado
        if (!guestName.trim()) return alert("Escribe el nombre del cliente de paso.");
        finalClientName = guestName;
        finalUserId = null;
     } else {
-       // Si es registrado, MANDAMOS SU ID (Esto hace que aparezca en su historial)
+       // Caso Registrado
+       if (!selectedUserId) return alert("Por favor selecciona un cliente de la lista.");
        finalUserId = selectedUserId;
-       // Opcional: mandamos el nombre también por si acaso, pero el ID es lo que importa
        const userObj = users.find(u => u.id === selectedUserId);
        finalClientName = userObj?.name;
     }
 
     const orderData = {
-      userId: finalUserId,       // <--- AQUÍ ESTÁ LA MAGIA
+      userId: finalUserId,
       clientName: finalClientName,
       total,
       items: [{ productId: selectedProduct.id, quantity, price: selectedProduct.price }]
     };
 
     try {
+      setLoading(true);
       const res = await fetch(`${API_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,9 +75,10 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
       if (res.ok) {
         alert('✅ Venta registrada con éxito');
         onSaleCompleted(); 
-        // Resetear formulario
+        // Reset completo
         setGuestName(''); 
         setSelectedUserId(''); 
+        setIsGuest(false);
         setQuantity(1); 
         setSelectedProductId('');
       } else {
@@ -85,71 +86,121 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
         alert('Error: ' + err.error);
       }
     } catch (error) { alert('Error de conexión'); }
+    finally { setLoading(false); }
   };
 
   return (
-    <div style={{ border: '1px solid #444', padding: '20px', borderRadius: '10px', marginBottom: '20px', background: '#222', color: 'white' }}>
-      <h3>🛒 Asignar Venta (Admin)</h3>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '400px' }}>
+    <div style={{ maxWidth: '500px', margin: '0 auto', background: 'white', padding: '25px', borderRadius: '10px', border: '1px solid #ddd', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+      <h2 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>🛒 Registrar Venta</h2>
+      
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
-        {/* SECCIÓN DE CLIENTE MEJORADA */}
-        <div style={{ background: '#333', padding: '15px', borderRadius: '5px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', color: '#17a2b8', fontWeight: 'bold' }}>
+        {/* 1. SELECCIONAR CLIENTE (Estilo idéntico a Turnos) */}
+        <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+            <label style={{ fontWeight: 'bold', color: '#007bff', display: 'block', marginBottom: '10px' }}>
                 1. ¿A quién le vendes?
             </label>
             
-            <select 
-                value={selectedUserId} 
-                onChange={(e) => setSelectedUserId(e.target.value)}
-                required
-                style={{ padding: '10px', width: '100%', marginBottom: '10px' }}
-            >
-                <option value="">-- Seleccionar Cliente --</option>
-                {users.map(u => (
-                    <option key={u.id} value={u.id}>
-                        👤 {u.name} {u.email ? `(${u.email})` : ''}
-                    </option>
-                ))}
-                <option value="guest">⚡ Cliente de paso (Sin cuenta)</option>
-            </select>
+            <div style={{ marginBottom: '10px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px', userSelect: 'none' }}>
+                    <input 
+                        type="checkbox" 
+                        checked={isGuest} 
+                        onChange={(e) => { 
+                            setIsGuest(e.target.checked); 
+                            setGuestName(''); 
+                            setSelectedUserId(''); 
+                        }} 
+                    /> 
+                    Es un cliente sin cuenta (Invitado)
+                </label>
+            </div>
 
-            {/* Solo aparece si eliges "Cliente de paso" */}
-            {selectedUserId === 'guest' && (
+            {isGuest ? (
+                // INPUT DE TEXTO (Invitado)
                 <input 
                     type="text" 
                     value={guestName} 
                     onChange={(e) => setGuestName(e.target.value)} 
-                    placeholder="Escribe el nombre del cliente..." 
+                    placeholder="Nombre del cliente..." 
                     required 
-                    style={{ padding: '10px', width: '94%', border: '1px solid #17a2b8' }} 
+                    style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} 
                 />
+            ) : (
+                // SELECT (Registrado)
+                <select 
+                    value={selectedUserId} 
+                    onChange={(e) => setSelectedUserId(e.target.value)}
+                    required
+                    style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', outline: 'none' }}
+                >
+                    <option value="">-- Seleccionar Cliente --</option>
+                    {users.map(u => (
+                        <option key={u.id} value={u.id}>
+                            👤 {u.name} {u.email ? `(${u.email})` : ''}
+                        </option>
+                    ))}
+                </select>
             )}
         </div>
 
-        {/* SECCIÓN DE PRODUCTO */}
+        {/* 2. SELECCIONAR PRODUCTO */}
         <div>
-            <label style={{ display: 'block', marginBottom: '5px' }}>2. Producto:</label>
-            <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)} required style={{ padding: '10px', width: '100%' }}>
-            <option value="">Seleccionar...</option>
-            {products.map(p => (
-                <option key={p.id} value={p.id} disabled={p.stock <= 0}>{p.name} (${p.price}) - Stock: {p.stock}</option>
-            ))}
+            <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>2. Producto:</label>
+            <select 
+                value={selectedProductId} 
+                onChange={(e) => setSelectedProductId(e.target.value)} 
+                required 
+                style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+            >
+                <option value="">-- Seleccionar --</option>
+                {products.map(p => (
+                    <option key={p.id} value={p.id} disabled={p.stock <= 0}>
+                        {p.name} (${p.price}) {p.stock <= 0 ? '- SIN STOCK' : `- Stock: ${p.stock}`}
+                    </option>
+                ))}
             </select>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        {/* 3. CANTIDAD Y TOTAL */}
+        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
             <div style={{ flex: 1 }}>
-                <label>Cantidad:</label>
-                <input type="number" min="1" max={selectedProduct?.stock || 1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} required style={{ padding: '10px', width: '100%' }} />
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Cantidad:</label>
+                <input 
+                    type="number" 
+                    min="1" 
+                    max={selectedProduct?.stock || 1} 
+                    value={quantity} 
+                    onChange={(e) => setQuantity(Number(e.target.value))} 
+                    required 
+                    style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }} 
+                />
             </div>
-            <div style={{ flex: 1, textAlign: 'right' }}>
-                <label>Total:</label>
-                <div style={{ fontSize: '22px', fontWeight: 'bold', color: '#4CAF50' }}>${total.toLocaleString()}</div>
+            
+            <div style={{ flex: 1, textAlign: 'right', background: '#f1f3f5', padding: '10px', borderRadius: '8px' }}>
+                <span style={{ fontSize: '12px', color: '#666', display: 'block' }}>Total a cobrar:</span>
+                <strong style={{ fontSize: '24px', color: '#28a745' }}>${total.toLocaleString()}</strong>
             </div>
         </div>
 
-        <button type="submit" style={{ marginTop: '10px', padding: '12px', background: '#007bff', color: 'white', border: 'none', cursor: 'pointer', fontSize: '16px', borderRadius: '5px', fontWeight: 'bold' }}>
-            Confirmar Venta
+        {/* BOTÓN CONFIRMAR */}
+        <button 
+            type="submit" 
+            disabled={loading}
+            style={{ 
+                marginTop: '10px', 
+                padding: '12px', 
+                background: '#28a745', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '6px', 
+                fontSize: '16px', 
+                fontWeight: 'bold',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.7 : 1
+            }}
+        >
+            {loading ? 'Procesando...' : '✅ Confirmar Venta'}
         </button>
       </form>
     </div>

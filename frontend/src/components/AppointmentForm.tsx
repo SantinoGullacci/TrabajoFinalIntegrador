@@ -4,8 +4,9 @@ import { useAuth } from '../context/AuthContext';
 
 interface Service { id: number; name: string; price: number; duration: number; }
 interface Appointment { date: string; time: string; Service?: { duration: number }; }
+interface User { id: string; name: string; email: string; }
 
-// Helper para convertir "HH:MM" a minutos totales (para comparar fácil)
+// Helper para convertir "HH:MM" a minutos totales
 const toMinutes = (time: string) => {
   const [h, m] = time.split(':').map(Number);
   return h * 60 + m;
@@ -14,34 +15,46 @@ const toMinutes = (time: string) => {
 export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }: any) {
   const { user } = useAuth();
   
+  // --- ESTADOS DE DATOS ---
   const [services, setServices] = useState<Service[]>([]);
-  const [selectedServiceId, setSelectedServiceId] = useState('');
+  const [users, setUsers] = useState<User[]>([]); // Lista de usuarios para el Admin
+  const [existingAppointments, setExistingAppointments] = useState<Appointment[]>([]);
   
+  // --- ESTADOS DEL FORMULARIO ---
+  const [selectedServiceId, setSelectedServiceId] = useState('');
   const [date, setDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   
-  // Aquí guardamos los turnos QUE YA EXISTEN ese día para calcular huecos
-  const [existingAppointments, setExistingAppointments] = useState<Appointment[]>([]);
-  
+  // --- ESTADOS EXCLUSIVOS DE ADMIN ---
+  const [isGuest, setIsGuest] = useState(false);           // ¿Es cliente de paso?
+  const [adminClientName, setAdminClientName] = useState(''); // Nombre escrito a mano
+  const [adminSelectedUserId, setAdminSelectedUserId] = useState(''); // ID seleccionado del select
+
   const [loading, setLoading] = useState(false);
 
-  // 1. Cargar Servicios
+  // 1. Cargar Servicios y Usuarios (si es admin)
   useEffect(() => {
+    // Cargar Servicios
     fetch(`${API_URL}/services`)
       .then(res => res.json())
       .then(data => setServices(data))
       .catch(console.error);
-  }, []);
 
-  // 2. Cuando cambia la FECHA, buscamos los turnos ocupados de ese día
+    // Si es Admin, cargar lista de usuarios para el select
+    if (user?.role === 'admin') {
+        fetch(`${API_URL}/users`)
+            .then(res => res.json())
+            .then(data => setUsers(data))
+            .catch(console.error);
+    }
+  }, [user]);
+
+  // 2. Buscar turnos ocupados cuando cambia la fecha
   useEffect(() => {
     if (date) {
-        // Pedimos TODOS los turnos (sin filtrar por usuario) para ver ocupación
-        // NOTA: Tu backend debe permitir esto o crear una ruta específica pública de disponibilidad
         fetch(`${API_URL}/appointments`) 
             .then(res => res.json())
             .then((data: any[]) => {
-                // Filtramos solo los de la fecha seleccionada y que no estén cancelados
                 const daysAppts = data.filter(a => a.date === date && a.status !== 'cancelled');
                 setExistingAppointments(daysAppts);
             })
@@ -49,46 +62,38 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }
     }
   }, [date, refreshTrigger]);
 
-  // --- GENERADOR DE HORARIOS DISPONIBLES ---
+  // --- GENERADOR DE HORARIOS INTELIGENTE ---
   const generateTimeSlots = () => {
     if (!selectedServiceId || !date) return [];
 
     const service = services.find(s => s.id === Number(selectedServiceId));
     if (!service) return [];
     
-    const duration = service.duration || 30; // Duración del servicio elegido
+    const duration = service.duration || 30;
     const slots = [];
     
-    // Configuración: Horario de 9:00 a 18:00, intervalos de 30 mins (o 15 si prefieres)
     let startMin = 9 * 60; // 09:00
     const endMin = 18 * 60; // 18:00
-    const step = 30; // <--- CAMBIA ESTO A 15 O 5 SI QUIERES MÁS PRECISIÓN
+    const step = 30; 
 
     while (startMin + duration <= endMin) {
-        // Convertimos minutos actuales a "HH:MM"
         const h = Math.floor(startMin / 60).toString().padStart(2, '0');
         const m = (startMin % 60).toString().padStart(2, '0');
         const timeString = `${h}:${m}`;
         
-        // Calculamos fin del turno potencial
         const potentialStart = startMin;
         const potentialEnd = startMin + duration;
 
-        // VERIFICAMOS SI CHOCA CON ALGÚN TURNO EXISTENTE
         const isOccupied = existingAppointments.some(appt => {
             const apptStart = toMinutes(appt.time);
-            // Si el turno existente no tiene servicio asociado, asumimos 30 min por seguridad
             const apptDuration = appt.Service?.duration || 30; 
             const apptEnd = apptStart + apptDuration;
-
-            // Lógica de colisión: (NuevoInicio < ViejoFin) Y (NuevoFin > ViejoInicio)
             return (potentialStart < apptEnd && potentialEnd > apptStart);
         });
 
         if (!isOccupied) {
             slots.push(timeString);
         }
-
         startMin += step;
     }
     return slots;
@@ -102,11 +107,31 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }
     if (!user) return alert('Debes iniciar sesión');
     if (!selectedTime) return alert('Selecciona un horario');
 
+    // LÓGICA DE USUARIO FINAL
+    let finalUserId: string | null = user.id;      // Por defecto soy yo (Cliente)
+    let finalClientName: string | null = null;     // Por defecto no hay nombre manual
+
+    // SI SOY ADMIN, SOBRESCRIBIMOS:
+    if (user.role === 'admin') {
+        if (isGuest) {
+            // Caso 1: Admin crea turno para alguien de la calle
+            if (!adminClientName.trim()) return alert('Escribe el nombre del cliente.');
+            finalUserId = null; // No hay ID de usuario
+            finalClientName = adminClientName;
+        } else {
+            // Caso 2: Admin crea turno para un usuario registrado
+            if (!adminSelectedUserId) return alert('Selecciona un usuario de la lista.');
+            finalUserId = adminSelectedUserId;
+            finalClientName = null;
+        }
+    }
+
     const appointmentData = {
         date,
         time: selectedTime,
         ServiceId: Number(selectedServiceId),
-        UserId: user.id, // Si eres admin y quieres agendar para otro, esto cambia (ver SalesForm)
+        UserId: finalUserId,       // <--- Aquí va el ID correcto (Mío o del elegido)
+        clientName: finalClientName, // <--- Aquí va el nombre manual (si aplica)
         status: 'pending'
     };
 
@@ -121,7 +146,13 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }
         if (res.ok) {
             alert('✅ Turno agendado con éxito');
             onAppointmentCreated();
-            setDate(''); setSelectedTime(''); setSelectedServiceId('');
+            // Resetear formulario
+            setDate(''); 
+            setSelectedTime(''); 
+            setSelectedServiceId('');
+            setAdminClientName('');
+            setAdminSelectedUserId('');
+            setIsGuest(false);
         } else {
             const err = await res.json();
             alert('❌ Error: ' + (err.error || 'Horario no disponible'));
@@ -139,9 +170,52 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }
       
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
+        {/* --- SECCIÓN EXCLUSIVA DE ADMIN: ELEGIR CLIENTE --- */}
+        {user?.role === 'admin' && (
+            <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+                <label style={{ fontWeight: 'bold', color: '#d63384', display: 'block', marginBottom: '10px' }}>👤 ¿Para quién es el turno?</label>
+                
+                <div style={{ marginBottom: '10px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '14px' }}>
+                        <input 
+                            type="checkbox" 
+                            checked={isGuest} 
+                            onChange={(e) => { setIsGuest(e.target.checked); setAdminClientName(''); setAdminSelectedUserId(''); }} 
+                        /> 
+                        Es un cliente sin cuenta (Invitado)
+                    </label>
+                </div>
+
+                {isGuest ? (
+                    <input 
+                        type="text" 
+                        placeholder="Nombre del cliente..." 
+                        value={adminClientName} 
+                        onChange={(e) => setAdminClientName(e.target.value)} 
+                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                    />
+                ) : (
+                    <select 
+                        value={adminSelectedUserId} 
+                        onChange={(e) => setAdminSelectedUserId(e.target.value)}
+                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                    >
+                        <option value="">-- Seleccionar Cliente --</option>
+                        {users.map(u => (
+                            <option key={u.id} value={u.id}>
+                               👤 {u.name} ({u.email})
+                            </option>
+                        ))}
+                    </select>
+                )}
+            </div>
+        )}
+
         {/* 1. SELECCIONAR SERVICIO */}
         <div>
-            <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>1. ¿Qué te quieres hacer?</label>
+            <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+                {user?.role === 'admin' ? '2. ¿Qué se va a hacer?' : '1. ¿Qué te quieres hacer?'}
+            </label>
             <select 
                 value={selectedServiceId} 
                 onChange={e => { setSelectedServiceId(e.target.value); setSelectedTime(''); }} 
@@ -159,7 +233,9 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }
 
         {/* 2. SELECCIONAR FECHA */}
         <div style={{ opacity: selectedServiceId ? 1 : 0.5, pointerEvents: selectedServiceId ? 'auto' : 'none' }}>
-            <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>2. Elige el día</label>
+            <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
+                {user?.role === 'admin' ? '3. Elige el día' : '2. Elige el día'}
+            </label>
             <input 
                 type="date" 
                 value={date} 
@@ -170,14 +246,14 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }
             />
         </div>
 
-        {/* 3. GRILLA DE HORARIOS (Súper Estética) */}
+        {/* 3. GRILLA DE HORARIOS */}
         {date && selectedServiceId && (
             <div>
-                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px' }}>3. Horarios Disponibles ({availableSlots.length})</label>
+                <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px' }}>Horarios Disponibles ({availableSlots.length})</label>
                 
                 {availableSlots.length === 0 ? (
                     <div style={{ padding: '15px', background: '#fff3cd', color: '#856404', borderRadius: '5px', textAlign: 'center' }}>
-                        🚫 No hay turnos disponibles para este día. Intenta otra fecha.
+                        🚫 No hay turnos disponibles.
                     </div>
                 ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '10px', maxHeight: '200px', overflowY: 'auto', padding: '5px' }}>
