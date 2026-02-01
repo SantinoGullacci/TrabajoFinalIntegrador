@@ -197,8 +197,6 @@ Si desplegas la sección **"Mis Turnos"**, te encontrarás con tres opciones:
 
 ## Tecnologías, librerías y frameworks utilizados
 
-## Tecnologías, librerías y frameworks utilizados
-
 ### Frontend
 * **React:** Librería principal para la construcción de la interfaz de usuario.
 * **TypeScript:** Superset de JavaScript que añade tipado estático para un código más robusto.
