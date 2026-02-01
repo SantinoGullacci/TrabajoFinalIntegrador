@@ -13,7 +13,6 @@ interface Product {
 
 export default function ProductManager({ onUpdate }: { onUpdate: () => void }) {
   const [products, setProducts] = useState<Product[]>([]);
-  // Agregamos category y brand al formulario
   const [formData, setFormData] = useState({ name: '', price: 0, stock: 0, imageUrl: '', category: '', brand: '' });
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -21,7 +20,6 @@ export default function ProductManager({ onUpdate }: { onUpdate: () => void }) {
   const [existingCategories, setExistingCategories] = useState<string[]>([]);
   const [existingBrands, setExistingBrands] = useState<string[]>([]);
 
-  // --- NUEVOS ESTADOS PARA PAGINADO Y BÚSQUEDA ---
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5); // Por defecto 5 items
@@ -121,7 +119,6 @@ export default function ProductManager({ onUpdate }: { onUpdate: () => void }) {
       </h2>
       
       <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px', marginBottom: '20px', background: editingId ? '#fff3cd' : 'transparent', padding: editingId ? '15px' : '0', borderRadius: '5px' }}>
-        {/* ... (Tus inputs del formulario siguen IGUAL) ... */}
         <div style={{gridColumn: 'span 2'}}>
           <label style={{ display: 'block', fontSize: '12px' }}>Nombre del Producto:</label>
           <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ padding: '8px', width: '100%' }} required />
@@ -166,7 +163,7 @@ export default function ProductManager({ onUpdate }: { onUpdate: () => void }) {
         </div>
       </form>
 
-      {/* --- NUEVO: BARRA DE BÚSQUEDA Y CANTIDAD --- */}
+      {/* --- BARRA DE BÚSQUEDA Y CANTIDAD --- */}
       <div style={{ marginBottom: '15px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
         <input 
             type="text" 
@@ -223,7 +220,7 @@ export default function ProductManager({ onUpdate }: { onUpdate: () => void }) {
         </tbody>
       </table>
 
-      {/* --- NUEVO: CONTROLES DE PAGINADO --- */}
+      {/* --- CONTROLES DE PAGINADO --- */}
       {totalPages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', marginTop: '15px' }}>
             <button 

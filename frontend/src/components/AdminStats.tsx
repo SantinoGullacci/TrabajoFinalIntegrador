@@ -10,12 +10,11 @@ interface Stats {
   alerts: { name: string; stock: number }[];
 }
 
-// 1. Definimos la interfaz de las Props para recibir el "gatillo"
 interface AdminStatsProps {
   refreshTrigger: number;
 }
 
-// 2. Recibimos la prop en la función
+// Recibimos la prop en la función
 export default function AdminStats({ refreshTrigger }: AdminStatsProps) {
   const [stats, setStats] = useState<Stats | null>(null);
 
@@ -25,7 +24,7 @@ export default function AdminStats({ refreshTrigger }: AdminStatsProps) {
       .then(res => res.json())
       .then(data => setStats(data))
       .catch(err => console.error(err));
-  }, [refreshTrigger]); // <--- 3. ¡Aquí está la magia! Agregamos la dependencia
+  }, [refreshTrigger]); 
 
   if (!stats) return <p>Cargando estadísticas...</p>;
 
@@ -42,8 +41,6 @@ export default function AdminStats({ refreshTrigger }: AdminStatsProps) {
   if (!stats || (stats as any).error) {
      return <div style={{padding: 20, color: 'red'}}>⚠️ Error cargando estadísticas. Revisa la consola del servidor.</div>;
   }
-
-  // ... aquí sigue tu return normal con los gráficos ...
 
   return (
     <div style={{ marginBottom: '40px' }}>

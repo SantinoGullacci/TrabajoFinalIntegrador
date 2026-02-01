@@ -15,13 +15,12 @@ const styles = {
     backgroundColor: '#333',
     color: '#fff',
     textAlign: 'center' as const,
-    padding: '10px 0', // Un poco menos de padding
-    marginTop: 'auto', // ESTO es la magia del Sticky Footer
-    // width: '100%', <--- BORRA ESTA LÍNEA, causa el desborde horizontal
+    padding: '10px 0', 
+    marginTop: 'auto', 
   },
   text: {
     margin: 0,
-    fontSize: '12px', // Un poco más discreto
+    fontSize: '12px', 
     fontWeight: '300'
   }
 };

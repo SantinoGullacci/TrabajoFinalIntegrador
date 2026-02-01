@@ -26,7 +26,7 @@ fs.readdirSync(path.join(__dirname, '/models'))
     modelDefiners.push(require(path.join(__dirname, '/models', file)));
   });
 
-// Injectamos la conexion (sequelize) a todos los modelos
+// Injectamos la conexion a todos los modelos
 modelDefiners.forEach(model => model(sequelize));
 
 // Capitalizamos los nombres de los modelos
@@ -37,14 +37,14 @@ sequelize.models = Object.fromEntries(capsEntries);
 // --- ZONA DE RELACIONES ---
 const { User, Service, Appointment, Product, Order, OrderItem } = sequelize.models;
 
-// 1. Relaciones de Turnos
+//  Relaciones de Turnos
 User.hasMany(Appointment);
 Appointment.belongsTo(User);
 
 Service.hasMany(Appointment);
 Appointment.belongsTo(Service);
 
-// 2. Relaciones de Ventas
+// Relaciones de Ventas
 User.hasMany(Order);
 Order.belongsTo(User);
 

@@ -12,7 +12,7 @@ interface Product {
   brand?: string;
 }
 
-// --- SUB-COMPONENTE: Tarjeta Individual (Sin cambios) ---
+// --- SUB-COMPONENTE: Tarjeta Individual ---
 const ProductCard = ({ product, onBuy, onImageClick }: { product: Product, onBuy: (p: Product, qty: number) => void, onImageClick: (url: string) => void }) => {
   const [quantity, setQuantity] = useState(1);
   const defaultImage = "https://cdn-icons-png.flaticon.com/512/1524/1524855.png";
@@ -128,16 +128,16 @@ export default function Shop() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       
-      {/* BARRA DE FILTROS TIPO MERCADO LIBRE (Diseño imagen adjunta) */}
+      {/* BARRA DE FILTROS TIPO MERCADO LIBRE */}
       <div style={{ background: 'white', padding: '15px 20px', borderRadius: '6px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'flex-end' }}>
           
-          {/* 1. TÍTULO E ICONO (Izquierda) */}
+          {/*  TÍTULO E ICONO  */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '5px', marginRight: '10px' }}>
              <span style={{ fontSize: '24px' }}>🔍</span>
              <h3 style={{ margin: 0, color: '#2c3e50', fontSize: '20px' }}>Filtros</h3>
           </div>
 
-          {/* 2. BUSCADOR (Ancho y central) */}
+          {/*  BUSCADOR  */}
           <div style={{ flex: 2, minWidth: '250px' }}>
              <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '4px', color: '#333' }}>Buscar</label>
              <input 
@@ -149,7 +149,7 @@ export default function Shop() {
              />
           </div>
           
-          {/* 3. CATEGORÍA */}
+          {/*  CATEGORÍA */}
           <div style={{ flex: 1, minWidth: '120px' }}>
               <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '4px', color: '#333' }}>Categoría</label>
               <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ced4da', borderRadius: '4px', fontSize: '14px', outline: 'none' }}>
@@ -158,7 +158,7 @@ export default function Shop() {
               </select>
           </div>
 
-          {/* 4. MARCA */}
+          {/*  MARCA */}
           <div style={{ flex: 1, minWidth: '120px' }}>
               <label style={{ fontSize: '11px', fontWeight: 'bold', display: 'block', marginBottom: '4px', color: '#333' }}>Marca</label>
               <select value={filterBrand} onChange={e => setFilterBrand(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ced4da', borderRadius: '4px', fontSize: '14px', outline: 'none' }}>
@@ -167,7 +167,7 @@ export default function Shop() {
               </select>
           </div>
 
-          {/* 5. PRECIO */}
+          {/*  PRECIO */}
           <div style={{ minWidth: '180px' }}>
              <label style={{ fontSize: '11px', fontWeight: 'bold', marginBottom: '4px', display: 'block', color: '#333' }}>Precio | $</label>
              <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -200,7 +200,7 @@ export default function Shop() {
              </div>
           </div>
           
-          {/* 6. LIMPIAR (A la derecha) */}
+          {/*  LIMPIAR  */}
           <div style={{ marginLeft: 'auto', paddingBottom: '8px' }}>
             <button onClick={clearFilters} style={{ background: 'transparent', color: '#007bff', border: 'none', cursor: 'pointer', fontSize: '13px', textDecoration: 'none', fontWeight: '600' }}>
                 Limpiar filtros

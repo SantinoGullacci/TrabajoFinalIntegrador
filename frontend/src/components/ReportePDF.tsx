@@ -1,5 +1,4 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
-// IMPORTANTE: Usamos 'import type' para que no te de error en rojo
 import type { DataReporte } from '../utils/reportUtils';
 
 // Estilos para el PDF

@@ -33,25 +33,24 @@ module.exports = (sequelize) => {
     securityAnswer: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: 'peluqueria' // Valor por defecto para no romper usuarios viejos
+      defaultValue: 'peluqueria' 
     },
     
     notes: {
-      type: DataTypes.TEXT, // Usamos TEXT para que puedas escribir mucho
+      type: DataTypes.TEXT, 
       allowNull: true
     }
   }, { timestamps: false });
 
-  // HOOK: Antes de crear, encriptamos contraseña Y respuesta de seguridad
+  // Antes de crear, encriptamos contraseña Y respuesta de seguridad
   User.beforeCreate(async (user) => {
     const salt = await bcrypt.genSalt(10);
     
-    // 1. Encriptar Password
+    // Encriptar Password
     user.password = await bcrypt.hash(user.password, salt);
     
-    // 2. Encriptar Respuesta de Seguridad (Si existe)
+    // Encriptar Respuesta de Seguridad (Si existe)
     if (user.securityAnswer) {
-        // La guardamos en minúsculas para que no importe si escriben "Rex" o "rex"
         user.securityAnswer = await bcrypt.hash(user.securityAnswer.toLowerCase(), salt);
     }
   });

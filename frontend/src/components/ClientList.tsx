@@ -8,7 +8,7 @@ interface User {
   email: string;
   phone: string;
   role: 'admin' | 'client';
-  notes?: string; // <--- NUEVO CAMPO
+  notes?: string;
 }
 
 export default function ClientList() {

@@ -36,7 +36,7 @@ const deleteProduct = async (req, res) => {
     }
 };
 
-// Actualizar Stock (Para cuando vendamos)
+// Actualizar Stock 
 const updateStock = async (req, res) => {
     try {
         const { id } = req.params;

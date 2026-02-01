@@ -3,17 +3,16 @@ const morgan = require('morgan');
 const cors = require('cors');
 const routes = require('./routes/index'); 
 
-const app = express(); // Aquí definiste 'app'
+const app = express(); 
 
 app.name = 'API';
 
-// --- 1. MIDDLEWARES (Configuración) ---
+// --- MIDDLEWARES  ---
 
-// IMPORTANTE: El CORS va primero, antes que las rutas.
 app.use(cors({
   origin: [
-    'http://localhost:5173',                         // Tu local
-    'https://trabajo-final-integrador-pi.vercel.app' // Tu Vercel (SIN barra al final)
+    'http://localhost:5173',                         // local
+    'https://trabajo-final-integrador-pi.vercel.app' // Vercel
   ],
   credentials: true
 }));
@@ -21,7 +20,7 @@ app.use(cors({
 app.use(morgan('dev'));
 app.use(express.json());
 
-// --- 2. RUTAS ---
+// --- RUTAS ---
 app.use('/', routes); 
 
 module.exports = app;

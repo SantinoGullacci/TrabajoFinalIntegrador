@@ -11,7 +11,7 @@ module.exports = (sequelize) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    price: { // Guardamos el precio histórico por si mañana sube la inflación
+    price: { 
       type: DataTypes.FLOAT,
       allowNull: false,
     }

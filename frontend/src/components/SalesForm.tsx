@@ -10,7 +10,7 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
   const [products, setProducts] = useState<Product[]>([]);
   
   // ESTADOS FORMULARIO
-  const [isGuest, setIsGuest] = useState(false); // <--- NUEVO: Checkbox como en Turnos
+  const [isGuest, setIsGuest] = useState(false); 
   const [selectedUserId, setSelectedUserId] = useState<string>(''); 
   const [guestName, setGuestName] = useState('');
   
@@ -19,7 +19,7 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // 1. Cargar Usuarios (Filtrar clientes)
+    //  Cargar Usuarios 
     fetch(`${API_URL}/users`)
       .then(res => res.json())
       .then(data => {
@@ -29,7 +29,7 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
         }
       });
 
-    // 2. Cargar Productos
+    // Cargar Productos
     fetch(`${API_URL}/products`).then(res => res.json()).then(data => setProducts(data));
   }, [refreshTrigger]);
 
@@ -43,7 +43,6 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
     let finalUserId = null;
     let finalClientName = null;
 
-    // LÓGICA UNIFICADA CON TURNOS
     if (isGuest) {
        // Caso Invitado
        if (!guestName.trim()) return alert("Escribe el nombre del cliente de paso.");
@@ -75,7 +74,6 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
       if (res.ok) {
         alert('✅ Venta registrada con éxito');
         onSaleCompleted(); 
-        // Reset completo
         setGuestName(''); 
         setSelectedUserId(''); 
         setIsGuest(false);
@@ -95,7 +93,7 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
       
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
-        {/* 1. SELECCIONAR CLIENTE (Estilo idéntico a Turnos) */}
+        {/*  SELECCIONAR CLIENTE  */}
         <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #e9ecef' }}>
             <label style={{ fontWeight: 'bold', color: '#007bff', display: 'block', marginBottom: '10px' }}>
                 1. ¿A quién le vendes?
@@ -144,7 +142,7 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
             )}
         </div>
 
-        {/* 2. SELECCIONAR PRODUCTO */}
+        {/*  SELECCIONAR PRODUCTO */}
         <div>
             <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>2. Producto:</label>
             <select 
@@ -162,7 +160,7 @@ export default function SalesForm({ onSaleCompleted, refreshTrigger }: { onSaleC
             </select>
         </div>
 
-        {/* 3. CANTIDAD Y TOTAL */}
+        {/*  CANTIDAD Y TOTAL */}
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
             <div style={{ flex: 1 }}>
                 <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Cantidad:</label>

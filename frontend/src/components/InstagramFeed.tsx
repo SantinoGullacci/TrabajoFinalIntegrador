@@ -1,6 +1,3 @@
-
-// IMÁGENES DE PRUEBA (Reemplázalas por las reales de Mara Cabo)
-// Puedes usar links de imgbb, cloudinary, o archivos locales en /public
 const INSTA_PHOTOS = [
   "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=500&q=60", // Corte hombre
   "https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=500&q=60", // Tinte
@@ -12,7 +9,6 @@ const INSTA_PHOTOS = [
 ];
 
 export default function InstagramFeed() {
-  // Duplicamos el array para lograr el efecto "infinito" sin saltos
   const carouselImages = [...INSTA_PHOTOS, ...INSTA_PHOTOS];
 
   return (
@@ -22,7 +18,7 @@ export default function InstagramFeed() {
           <span style={{ fontSize: '24px' }}>📸</span> Seguinos en Instagram
         </h3>
         <a 
-            href="https://www.instagram.com/mara.cabo.estilista" // CAMBIA ESTO POR EL LINK REAL
+            href="https://www.instagram.com/mara.cabo.estilista"
             target="_blank" 
             rel="noopener noreferrer"
             style={{ color: '#555', textDecoration: 'none', fontSize: '14px' }}

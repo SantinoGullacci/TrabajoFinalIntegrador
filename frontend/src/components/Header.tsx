@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
   onNavigate: (tab: string) => void;
-  onToggleMobileMenu: () => void; // <--- NUEVA PROP PARA EL MENÚ
+  onToggleMobileMenu: () => void; 
 }
 
 export default function Header({ onNavigate, onToggleMobileMenu }: HeaderProps) {
@@ -22,7 +22,7 @@ export default function Header({ onNavigate, onToggleMobileMenu }: HeaderProps) 
       <div 
         className="header-logo" 
         onClick={() => onNavigate('home')} 
-        style={{ cursor: 'pointer', flex: 1, justifyContent: 'center' }} // Centrado
+        style={{ cursor: 'pointer', flex: 1, justifyContent: 'center' }} 
       >
         <div className="header-logo">
         <img 

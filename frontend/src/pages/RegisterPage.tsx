@@ -54,7 +54,6 @@ export default function RegisterPage() {
         <input name="name" placeholder="Nombre Completo" onChange={handleChange} required style={{ display: 'block', width: '100%', padding: '10px', margin: '10px 0' }} />
         <input name="email" type="email" placeholder="Email" onChange={handleChange} required style={{ display: 'block', width: '100%', padding: '10px', margin: '10px 0' }} />
         
-        {/* Campo Password con Ojito */}
         <div style={{ position: 'relative', margin: '10px 0' }}>
             <input 
                 name="password" 

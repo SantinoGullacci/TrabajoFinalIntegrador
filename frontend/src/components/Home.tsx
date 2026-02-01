@@ -18,7 +18,7 @@ export default function Home() {
   const [info, setInfo] = useState(DEFAULT_INFO);
   const [isEditing, setIsEditing] = useState(false);
 
-  // 1. CARGAR DATOS (GET)
+  // CARGAR DATOS (GET)
   useEffect(() => {
     fetch(`${API_URL}/businessInfo`)
       .then(res => res.ok ? res.json() : null)
@@ -28,7 +28,7 @@ export default function Home() {
       .catch(err => console.error(err));
   }, []);
 
-  // 2. GUARDAR CAMBIOS (PUT)
+  // GUARDAR CAMBIOS (PUT)
   const handleSave = async () => {
     try {
       const res = await fetch(`${API_URL}/businessInfo`, {
@@ -56,15 +56,9 @@ export default function Home() {
       
 {/* CABECERA (NOMBRE FIJO - NO EDITABLE) */}
       <div style={{ 
-        
-        // CAMBIO AQUÍ: Aumentamos el padding vertical (antes era solo '40px')
-        // Probamos con 100px arriba/abajo y 20px a los lados.
-        // Puedes aumentar el 100px si aún necesitas ver más imagen.
         padding: '100px 20px', 
-        
         textAlign: 'center',
         marginBottom: '30px',
-        // Imagen de fondo
         backgroundImage: 'url("/bannerMC.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center'

@@ -1,6 +1,5 @@
-/* src/index.css */
 * {
-  box-sizing: border-box; /* Esto evita que el padding agrande los elementos */
+  box-sizing: border-box; 
 }
 
 html, body {
@@ -8,11 +7,11 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow-x: hidden; /* Fuerza a que no haya scroll horizontal */
+  overflow-x: hidden; 
 }
 
 #root {
-  min-height: 100vh; /* Asegura que la app ocupe al menos toda la pantalla */
+  min-height: 100vh; 
   display: flex;
   flex-direction: column;
 }
@@ -32,12 +31,10 @@ html, body {
 
 body {
   margin: 0;
-  background-color: #f0f2f5; /* Fondo gris muy suave para toda la web */
+  background-color: #f0f2f5; 
   color: #333;
 }
 
-/* --- MEJORAS EN INPUTS Y SELECTS --- */
-/* Esto hará que todos tus formularios se vean modernos automáticamente */
 input, select {
   border: 1px solid #ced4da;
   border-radius: 6px;
@@ -49,10 +46,9 @@ input, select {
 
 input:focus, select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Anillo azul suave al escribir */
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); 
 }
 
-/* --- MEJORAS EN BOTONES --- */
 button {
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -69,10 +65,9 @@ button:hover {
 }
 
 /* --- TARJETAS Y CONTENEDORES --- */
-/* Suaviza los bordes de tus divs con borde */
 div[style*="border"] {
   box-shadow: 0 4px 6px rgba(0,0,0,0.05); /* Sombra sutil */
-  border: 1px solid #e9ecef !important; /* Sobreescribe bordes duros */
+  border: 1px solid #e9ecef !important; 
 }
 
 /* --- TABLAS --- */
@@ -104,7 +99,6 @@ td {
 }
 
 /* --- UTILIDADES --- */
-/* Tu clase para quitar flechas de inputs numéricos */
 .no-spinner::-webkit-inner-spin-button, 
 .no-spinner::-webkit-outer-spin-button { 
   -webkit-appearance: none; 
@@ -115,7 +109,6 @@ td {
   appearance: textfield;
 }
 
-/* Scrollbar moderna */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -144,7 +137,7 @@ a:hover {
 /* Clase para la imagen dentro de la tarjeta */
 .product-card-image {
   transition: transform 0.3s ease; /* Suaviza la animación */
-  cursor: pointer; /* Manito para indicar que se puede clickear */
+  cursor: pointer; 
 }
 
 /* Cuando el mouse pasa por encima del CONTENEDOR de la imagen */
@@ -159,11 +152,11 @@ a:hover {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.85); /* Fondo negro semi-transparente */
+  background-color: rgba(0, 0, 0, 0.85); 
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000; /* Asegura que esté por encima de todo lo demás */
+  z-index: 2000; 
   cursor: zoom-out; /* Icono de lupa con menos para cerrar */
   animation: fadeIn 0.2s ease-in;
 }
@@ -214,7 +207,7 @@ a:hover {
 }
 
 .sidebar-btn.active {
-  background-color: #007bff; /* Azul primario */
+  background-color: #007bff; 
   color: white;
   font-weight: bold;
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -226,12 +219,11 @@ a:hover {
   overflow-y: auto; /* Si el contenido es largo, scrollea solo el contenido */
 }
 
-/* Pequeñas animaciones de entrada */
 @keyframes fadeIn {from { opacity: 0; }}
 @keyframes popIn {from { transform: scale(0.8); }}
 
-/* --- LAYOUT PRINCIPAL MODIFICADO --- */
-/* Ahora el contenedor principal divide la pantalla en: Sidebar | MainContent */
+/* --- LAYOUT PRINCIPAL--- */
+/*  division Sidebar | MainContent */
 .admin-container {
   display: flex;
   height: 100vh;
@@ -245,13 +237,13 @@ a:hover {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Para que el scroll sea interno */
+  overflow: hidden; 
 }
 
 .content-area {
   flex: 1;
   padding: 20px;
-  overflow-y: auto; /* El scroll va aquí */
+  overflow-y: auto; 
 }
 
 /* --- HEADER SUPERIOR --- */
@@ -284,7 +276,7 @@ a:hover {
   padding: 5px 10px;
   border-radius: 8px;
   transition: background 0.2s;
-  position: relative; /* Para posicionar el dropdown */
+  position: relative; 
 }
 
 .header-user-section:hover {
@@ -318,10 +310,10 @@ a:hover {
   border: 2px solid #e9ecef;
 }
 
-/* --- DROPDOWN MENÚ (El cuadrito blanco flotante) --- */
+/* --- DROPDOWN MENÚ  --- */
 .header-dropdown {
   position: absolute;
-  top: 100%; /* Justo debajo del usuario */
+  top: 100%; 
   right: 0;
   width: 200px;
   background: white;
@@ -355,31 +347,29 @@ a:hover {
   color: #dc3545;
 }
 
-/* --- ANIMACIÓN DEL SUB-MENÚ (ACORDEÓN) --- */
+/* --- ANIMACIÓN DEL SUB-MENÚ  --- */
 .submenu-container {
   /* Estado inicial: Cerrado */
   max-height: 0;
   opacity: 0;
   overflow: hidden; /* Esconde el contenido que sobra */
-  transform: translateY(-10px); /* Un pequeño desplazamiento hacia arriba */
+  transform: translateY(-10px); 
   
-  /* La magia de la transición */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   
   /* Estilo visual */
-  background-color: rgba(255, 255, 255, 0.05); /* Fondo sutil */
-  border-radius: 0 0 8px 8px; /* Bordes redondeados solo abajo */
+  background-color: rgba(255, 255, 255, 0.05); 
+  border-radius: 0 0 8px 8px; 
 }
 
 .submenu-container.open {
   /* Estado final: Abierto */
-  max-height: 200px; /* Altura máxima suficiente para tus botones */
+  max-height: 200px; 
   opacity: 1;
   transform: translateY(0);
   margin-bottom: 10px;
 }
 
-/* Pequeño detalle: la flechita gira */
 .arrow-icon {
   display: inline-block;
   transition: transform 0.3s ease;
@@ -387,7 +377,7 @@ a:hover {
 .arrow-icon.open {
   transform: rotate(180deg);
 }
-/* --- ESTILOS DE LA SIDEBAR (MODO DARK ELEGANT) --- */
+/* --- ESTILOS DE LA SIDEBAR --- */
 .admin-container {
   display: flex;
   min-height: 100vh;
@@ -397,11 +387,9 @@ a:hover {
 .sidebar {
   width: 250px; 
   min-width: 250px;
-  /* CAMBIO: Color Gris Oscuro Elegante */
   background-color: #212529; 
-  /* CAMBIO: Texto blanco */
   color: #ecf0f1; 
-  border-right: 1px solid #444; /* Borde más sutil */
+  border-right: 1px solid #444; 
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -416,7 +404,6 @@ a:hover {
   padding: 20px 10px;
 }
 
-/* EL BOTÓN DE HAMBURGUESA */
 .menu-toggle-btn {
   background: none;
   border: none;
@@ -424,18 +411,17 @@ a:hover {
   cursor: pointer;
   margin-bottom: 20px;
   align-self: flex-start;
-  /* SOLUCIÓN: Forzamos el color a blanco o gris claro */
   color: #f8f9fa; 
   transition: color 0.3s;
 }
 
 .menu-toggle-btn:hover {
-  color: #0d6efd; /* Un toquecito azul al pasar el mouse */
+  color: #0d6efd; 
 }
 
 /* TÍTULO "NAVEGACIÓN" */
 .sidebar h2.btn-text {
-  color: #adb5bd !important; /* Gris clarito para el subtítulo */
+  color: #adb5bd !important; 
 }
 
 /* BOTONES DEL MENÚ */
@@ -453,26 +439,22 @@ a:hover {
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.2s;
-  /* Texto de los botones en gris claro */
   color: #ced4da; 
 }
 
-/* HOVER (Al pasar el mouse) */
+/* HOVER  */
 .sidebar-btn:hover {
-  /* Fondo gris un poco más claro que la base */
   background-color: #343a40; 
   color: #ffffff;
 }
 
-/* ACTIVO (Botón seleccionado) */
+/* ACTIVO  */
 .sidebar-btn.active {
-  /* Azul intenso o el color de tu marca */
   background-color: #0d6efd; 
   color: white;
   font-weight: bold;
 }
 
-/* Flechitas y textos secundarios */
 .sidebar .arrow-icon {
   color: #adb5bd;
 }
@@ -493,7 +475,6 @@ a:hover {
   padding: 10px 0;
 }
 
-/* Asegúrate de que el contenedor alinee la imagen y el texto */
 .header-logo {
   display: flex;
   align-items: center;
@@ -503,21 +484,13 @@ a:hover {
 
 /* Estilos para la imagen del logo */
 .header-logo-img {
-  /* 1. Reducimos un poco la altura para que entre cómodamente */
   height: 32px; 
-  width: auto;  /* Mantiene la proporción original */
-  
-  /* 2. Asegura que la imagen entera sea visible sin deformarse */
+  width: auto;  
   object-fit: contain; 
-  
-  /* 3. IMPORTANTE: Quitamos el redondeo para que se vea la forma real del escudo */
-  /* border-radius: 50%;  <-- ELIMINADA */
 }
 
-/* =========================================
-   ESTILOS DE SIDEBAR FINAL (Inteligente v2)
-   ========================================= */
-/* 1. SIDEBAR CONFIGURACIÓN GENERAL (Igual que antes) */
+
+/* SIDEBAR CONFIGURACIÓN GENERAL  */
 .sidebar {
   width: 260px; min-width: 260px;
   background-color: #212529; color: #ecf0f1; 
@@ -527,7 +500,7 @@ a:hover {
 }
 .sidebar.collapsed { width: 80px; min-width: 80px; padding: 20px 10px; }
 
-/* 2. BOTÓN DE LA SIDEBAR (Igual que antes) */
+/*  BOTÓN DE LA SIDEBAR */
 .sidebar-btn {
   display: flex; align-items: center; width: 100%;             
   background: none; border: none; padding: 12px 10px;
@@ -538,39 +511,35 @@ a:hover {
 .sidebar-btn:hover { background-color: #343a40; color: #ffffff; }
 .sidebar-btn.active { background-color: #0d6efd; color: white; font-weight: bold; }
 
-/* 3. CONTENEDOR DEL TEXTO (La máscara) */
+/*  CONTENEDOR DEL TEXTO */
 .btn-text-container {
-  flex: 1;               /* Ocupa el espacio disponible */
-  overflow: hidden;      /* Esconde lo que sobra */
-  white-space: nowrap;   /* Una sola línea */
-  /* Quitamos la máscara de gradiente para que se vea mejor el efecto */
+  flex: 1;               
+  overflow: hidden;      
+  white-space: nowrap;   
 }
 
-/* 4. EL TEXTO ANIMADO (Aquí está el cambio IMPORTANTE) */
+/* EL TEXTO ANIMADO  */
 .btn-text-content {
   display: inline-block;
-  /* Por defecto NO tiene transición */
 }
 
-/* SOLO si React detecta que es largo, le agrega esta clase */
 .btn-text-content.is-overflowing {
-  transition: transform 4s linear; /* Habilitamos la animación suave */
+  transition: transform 4s linear; 
 }
 
-/* SOLO si es largo Y pasamos el mouse, se mueve */
 .sidebar-btn:hover .btn-text-content.is-overflowing {
   /* Movemos el texto a la izquierda para ver el final */
   transform: translateX(-60%); 
 }
 
-/* 5. LA FLECHA (Fija, igual que antes) */
+/* LA FLECHA  */
 .arrow-icon {
   flex-shrink: 0; font-size: 10px; transition: transform 0.3s ease;
   margin-left: auto; width: 15px; text-align: center;
 }
 .arrow-icon.open { transform: rotate(180deg); }
 
-/* 6. OTROS (Igual que antes) */
+/* OTROS  */
 .menu-toggle-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; margin-bottom: 20px; color: #f8f9fa; padding-left: 5px; }
 .sidebar h2 { font-size: 12px; text-transform: uppercase; color: #adb5bd; letter-spacing: 1px; margin-bottom: 15px; border-bottom: 1px solid #495057; padding-bottom: 10px; }
 .sidebar.collapsed .btn-text-container, .sidebar.collapsed .arrow-icon, .sidebar.collapsed h2 { display: none; }
@@ -588,30 +557,30 @@ a:hover {
 /* --- REGLAS PARA MÓVILES (Pantallas < 768px) --- */
 @media (max-width: 768px) {
 
-  /* 1. LAYOUT PRINCIPAL */
+  /*  LAYOUT PRINCIPAL */
   .admin-container {
     flex-direction: column;
   }
   
   .main-content-wrapper {
-    padding: 0 !important; /* Quitamos padding del wrapper */
-    padding-top: 70px !important; /* Espacio para el Header fijo */
+    padding: 0 !important; 
+    padding-top: 70px !important; 
     width: 100vw;
   }
 
   .content-area {
-    padding: 15px; /* Padding interno para el contenido */
+    padding: 15px; 
   }
 
-  /* 2. HEADER FIJO Y DISTRIBUIDO */
+  /*  HEADER FIJO Y DISTRIBUIDO */
   .top-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     z-index: 1000;
-    padding: 0 15px; /* Menos padding lateral */
-    justify-content: space-between; /* Izq: Menu, Centro: Logo, Der: User */
+    padding: 0 15px; 
+    justify-content: space-between; 
   }
 
   /* Botón de Hamburguesa (Izquierda) */
@@ -631,7 +600,6 @@ a:hover {
     text-align: center;
   }
   .logo-text {
-    /* Opcional: Ocultar texto "Estilista" si es muy largo, o achicarlo */
     font-size: 14px;
   }
 
@@ -643,29 +611,27 @@ a:hover {
     gap: 0;
   }
 
-  /* 3. SIDEBAR: PANTALLA COMPLETA */
+  /* SIDEBAR: PANTALLA COMPLETA */
   .sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100% !important; /* Ocupa todo el ancho */
-    height: 100vh;          /* Ocupa todo el alto */
-    z-index: 2000;          /* Por encima del Header */
-    padding-top: 60px;      /* Espacio para el botón de cerrar */
+    width: 100% !important; 
+    height: 100vh;          
+    z-index: 2000;          
+    padding-top: 60px;      
     
     /* ANIMACIÓN DE ENTRADA */
     transform: translateX(-100%); /* Oculto a la izquierda */
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Clase que agrega React cuando abres el menú */
   .sidebar.mobile-open {
-    transform: translateX(0); /* Se desliza a la vista */
+    transform: translateX(0); 
     box-shadow: 5px 0 15px rgba(0,0,0,0.5);
   }
 
-  /* Elementos internos de la sidebar */
-  .desktop-only { display: none; } /* Ocultamos la hamburguesa interna vieja */
+  .desktop-only { display: none; } 
   
   /* Botón X gigante para cerrar */
   .mobile-close-btn {
@@ -680,13 +646,12 @@ a:hover {
     cursor: pointer;
   }
 
-  /* Ajuste de botones grandes para dedos */
   .sidebar-btn {
-    padding: 15px 20px; /* Más gorditos */
-    font-size: 18px;    /* Letra más grande */
+    padding: 15px 20px; 
+    font-size: 18px;    
   }
 
-  /* 4. MODALES Y TABLAS */
+  /* MODALES Y TABLAS */
   .image-modal-content {
     max-width: 95%;
   }
@@ -698,7 +663,7 @@ a:hover {
 }
 
 /* =========================================
-   CARRUSEL INFINITO (INSTAGRAM STYLE)
+   CARRUSEL INSTAGRAM
    ========================================= */
 .instagram-section {
   margin-top: 60px;
@@ -706,9 +671,6 @@ a:hover {
   width: 100%;
   position: relative;
 
-  /* --- LA MAGIA DEL FADE OUT --- */
-  /* Esto crea un degradado de transparencia en los bordes */
-  /* Sintaxis: Transparente -> Visible (5%) -> Visible (95%) -> Transparente */
   
   -webkit-mask-image: linear-gradient(
     to right, 
@@ -767,20 +729,18 @@ a:hover {
   opacity: 0;
   transition: opacity 0.3s;
   border-radius: 12px;
-  margin: 10px; /* Para respetar el padding */
+  margin: 10px; 
 }
 
 .carousel-slide:hover .insta-overlay {
   opacity: 1;
 }
 
-/* Animación Clave */
 @keyframes scroll {
   0% { transform: translateX(0); }
-  100% { transform: translateX(calc(-250px * 7)); } /* Mueve la mitad de las fotos */
+  100% { transform: translateX(calc(-250px * 7)); } 
 }
 
-/* En móvil, que se vea más rápido o fotos más chicas */
 @media (max-width: 768px) {
   .carousel-slide {
     width: 180px;

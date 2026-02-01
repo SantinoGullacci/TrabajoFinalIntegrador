@@ -26,13 +26,13 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }
   const [selectedTime, setSelectedTime] = useState('');
   
   // --- ESTADOS EXCLUSIVOS DE ADMIN ---
-  const [isGuest, setIsGuest] = useState(false);           // ¿Es cliente de paso?
+  const [isGuest, setIsGuest] = useState(false);           
   const [adminClientName, setAdminClientName] = useState(''); // Nombre escrito a mano
   const [adminSelectedUserId, setAdminSelectedUserId] = useState(''); // ID seleccionado del select
 
   const [loading, setLoading] = useState(false);
 
-  // 1. Cargar Servicios y Usuarios (si es admin)
+  // Cargar Servicios y Usuarios (si es admin)
   useEffect(() => {
     // Cargar Servicios
     fetch(`${API_URL}/services`)
@@ -49,7 +49,7 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }
     }
   }, [user]);
 
-  // 2. Buscar turnos ocupados cuando cambia la fecha
+  // Buscar turnos ocupados cuando cambia la fecha
   useEffect(() => {
     if (date) {
         fetch(`${API_URL}/appointments`) 
@@ -114,12 +114,12 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }
     // SI SOY ADMIN, SOBRESCRIBIMOS:
     if (user.role === 'admin') {
         if (isGuest) {
-            // Caso 1: Admin crea turno para alguien de la calle
+            //Admin crea turno para alguien de la calle
             if (!adminClientName.trim()) return alert('Escribe el nombre del cliente.');
             finalUserId = null; // No hay ID de usuario
             finalClientName = adminClientName;
         } else {
-            // Caso 2: Admin crea turno para un usuario registrado
+            // Admin crea turno para un usuario registrado
             if (!adminSelectedUserId) return alert('Selecciona un usuario de la lista.');
             finalUserId = adminSelectedUserId;
             finalClientName = null;
@@ -130,8 +130,8 @@ export default function AppointmentForm({ onAppointmentCreated, refreshTrigger }
         date,
         time: selectedTime,
         ServiceId: Number(selectedServiceId),
-        UserId: finalUserId,       // <--- Aquí va el ID correcto (Mío o del elegido)
-        clientName: finalClientName, // <--- Aquí va el nombre manual (si aplica)
+        UserId: finalUserId,       
+        clientName: finalClientName, 
         status: 'pending'
     };
 

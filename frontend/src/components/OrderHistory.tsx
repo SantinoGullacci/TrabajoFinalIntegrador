@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 
-// Definimos la forma de los datos (Interfaces)
+// Definimos la forma de los datos 
 interface OrderItem {
   id: number;
   quantity: number;
@@ -14,7 +14,7 @@ interface Order {
   id: number;
   date: string;
   total: number;
-  clientName?: string; // Para clientes "de paso"
+  clientName?: string; // Para clientes de paso
   User?: { name: string; email: string }; // Para clientes registrados
   OrderItems: OrderItem[];
 }
@@ -28,7 +28,7 @@ export default function OrderHistory() {
     // Si es cliente, enviamos su ID. Si es admin, no enviamos nada (trae todo)
     let url = `${API_URL}/orders`;
     if (user?.role === 'client') {
-        url += `?userId=${user.id}`; // Con comillas invertidas (backticks)    
+        url += `?userId=${user.id}`;     
     }
 
     fetch(url)

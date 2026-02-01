@@ -18,9 +18,7 @@ import Home from './components/Home';
 import Footer from './components/Footer';
 import { API_URL } from './config';
 import OrderHistory from './components/OrderHistory';
-import TextAnimation from './components/TextAnimation'; // Asegúrate de tener este o usa texto normal
-
-// --- CORRECCIÓN AQUÍ: Usamos 'import type' y quitamos 'User' que no se usaba ---
+import TextAnimation from './components/TextAnimation'; 
 import type { Appointment } from './types/models';
 
 import { ExportButtons } from './components/ExportButtons';
@@ -69,16 +67,15 @@ function Dashboard() {
       }
   }, [user]);
 
-  // Función para alternar la barra lateral desktop
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
     if (!isCollapsed) setIsTurnosMenuOpen(false);
   };
 
-  // Función unificada de navegación (Maneja el cierre del menú móvil)
+  // Maneja el cierre del menú móvil
   const handleNavigation = (tabName: string) => {
     setActiveTab(tabName);
-    setIsMobileMenuOpen(false); // <--- IMPORTANTE: Cierra el menú al navegar
+    setIsMobileMenuOpen(false); 
   };
 
   // --- FUNCIONES DE TURNOS ---
@@ -238,15 +235,12 @@ function Dashboard() {
         className={`sidebar-btn ${isActive ? 'active' : ''}`} 
         onClick={(e) => {
             if (onClick) onClick(e);
-            // Si NO tiene submenú, cerramos el menú móvil al hacer click
             if (!hasSubmenu) setIsMobileMenuOpen(false);
         }}
         title={text}
     >
         <span style={{ fontSize: '1.2rem', flexShrink: 0 }}>{icon}</span>
         
-        {/* Aquí usas tu OverflowText o texto normal si quitaste el componente */}
-        {/* Si OverflowText da error, usa: <div className="btn-text-container"><span className="btn-text-content">{text}</span></div> */}
         <TextAnimation text={text} />
 
         {hasSubmenu && !isCollapsed && (
@@ -258,7 +252,7 @@ function Dashboard() {
   return (
     <div className="admin-container">
       
-      {/* 1. SIDEBAR DINÁMICA (CON SOPORTE MÓVIL) */}
+      {/* SIDEBAR DINÁMICA (CON SOPORTE MÓVIL) */}
       <div className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         
         {/* Botón "X" para cerrar solo en móvil */}
@@ -327,7 +321,7 @@ function Dashboard() {
         )}
       </div>
 
-      {/* 2. ZONA DERECHA (CONTENIDO) */}
+      {/*  ZONA DERECHA (CONTENIDO) */}
       <div className="main-content-wrapper" style={{ flex: 1, padding: '20px', overflowY: 'auto' }}>
          
          {/* HEADER UNIFICADO */}

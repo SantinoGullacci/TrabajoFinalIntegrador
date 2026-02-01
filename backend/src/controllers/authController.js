@@ -58,45 +58,42 @@ const login = async (req, res) => {
     }
 };
 
-// RECUPERAR CONTRASEÑA (ESTO ES LO QUE TE FALTABA)
 // RECUPERAR CONTRASEÑA
 const resetPassword = async (req, res) => {
     try {
         const { email, securityAnswer, newPassword } = req.body;
 
-        // 1. Buscamos al usuario
+        // Buscamos al usuario
         const user = await User.findOne({ where: { email } });
         if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
 
-        // --- CORRECCIÓN AQUÍ: VALIDAMOS QUE TENGA RESPUESTA GUARDADA ---
         if (!user.securityAnswer) {
              return res.status(400).json({ 
                  error: "Este usuario es antiguo y no tiene pregunta de seguridad configurada. Contacta al admin." 
              });
         }
 
-        // 2. Verificamos la palabra clave (Mascota)
-        // Ahora sí es seguro comparar porque sabemos que user.securityAnswer existe
+        // Verificamos la palabra clave
         const validAnswer = await bcrypt.compare(securityAnswer.toLowerCase(), user.securityAnswer);
         
         if (!validAnswer) return res.status(400).json({ error: "Respuesta de seguridad incorrecta" });
 
-        // 3. Encriptamos la nueva contraseña
+        // Encriptamos la nueva contraseña
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-        // 4. Guardamos
+        // Guardamos
         user.password = hashedPassword;
         await user.save();
 
         res.json({ message: "Contraseña actualizada correctamente" });
     } catch (error) {
-        console.error(error); // Para ver el error real en la consola negra
+        console.error(error); // Para ver el error real en la consola
         res.status(500).json({ error: "Error en el servidor al cambiar clave" });
     }
 };
 
-// CAMBIAR CONTRASEÑA (Desde Mi Perfil - Logueado SI)
+// CAMBIAR CONTRASEÑA (Desde Mi Perfil - Logueado)
 const changePassword = async (req, res) => {
     try {
         const { id } = req.params;

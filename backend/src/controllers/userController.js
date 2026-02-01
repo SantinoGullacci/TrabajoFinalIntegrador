@@ -3,15 +3,13 @@ const { User } = require('../db');
 // PUT /users/:id
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    // 1. Agregamos 'notes' a la lista de cosas que recibimos
     const { name, phone, role, notes } = req.body; 
 
     try {
         const user = await User.findByPk(id);
         if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
 
-        // 2. Actualizamos el usuario con los datos nuevos
-        // (Si no envían 'notes', se mantiene lo que había o se ignora si es undefined)
+        //  Actualizamos el usuario con los datos nuevos
         await user.update({ 
             name: name || user.name, 
             phone: phone || user.phone, 
@@ -62,16 +60,16 @@ const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
         
-        // 1. Buscamos al usuario
+        // Buscamos al usuario
         const user = await User.findByPk(id);
         if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
 
-        // 2. Lo eliminamos
+        // Lo eliminamos
         await user.destroy();
 
         res.json({ message: "Usuario eliminado correctamente" });
     } catch (error) {
-        // Si falla (ej: tiene turnos asociados y la DB protege los datos), avisamos
+        // Si falla avisamos
         res.status(500).json({ error: "No se pudo eliminar. Puede que tenga turnos o ventas asociadas." });
     }
 };

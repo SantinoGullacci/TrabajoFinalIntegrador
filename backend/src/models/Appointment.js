@@ -16,7 +16,6 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
     status: {
-      // AQUÍ ESTABA EL ERROR: Faltaba agregar 'completed' a la lista
       type: DataTypes.ENUM('pending', 'confirmed', 'cancelled', 'completed'), 
       defaultValue: 'pending',
     },

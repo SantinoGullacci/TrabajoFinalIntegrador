@@ -12,11 +12,11 @@ module.exports = (sequelize) => {
       allowNull: false,
     },
     price: {
-      type: DataTypes.FLOAT, // Usamos FLOAT para decimales
+      type: DataTypes.FLOAT, 
       allowNull: false,
     },
     duration: {
-      type: DataTypes.INTEGER, // Duración en minutos
+      type: DataTypes.INTEGER, 
       allowNull: false,
       defaultValue: 30
     },

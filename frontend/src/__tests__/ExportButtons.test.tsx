@@ -1,9 +1,8 @@
-// src/components/ExportButtons.test.tsx
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ExportButtons } from '../components/ExportButtons';
 
-// 1. Mockeamos las librerías complejas para que no rompan el test
+// Mockeamos las librerías complejas para que no rompan el test
 vi.mock('@react-pdf/renderer', () => ({
   PDFDownloadLink: ({ children }: any) => <div>{children({ loading: false })}</div>,
   Document: () => null,
@@ -13,7 +12,7 @@ vi.mock('@react-pdf/renderer', () => ({
   StyleSheet: { create: () => ({}) },
 }));
 
-// 2. Mockeamos tus utilidades
+// Mockeamos las utilidades
 vi.mock('../utils/exportToExcel', () => ({
   generarExcel: vi.fn(),
 }));

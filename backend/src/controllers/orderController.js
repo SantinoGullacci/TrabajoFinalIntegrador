@@ -5,7 +5,7 @@ const createOrder = async (req, res) => {
     const { userId, clientName, items, total } = req.body; 
 
     try {
-        // 1. Validar Stock
+        // Validar Stock
         for (const item of items) {
             const product = await Product.findByPk(item.productId);
             if (!product || product.stock < item.quantity) {
@@ -13,7 +13,7 @@ const createOrder = async (req, res) => {
             }
         }
 
-        // 2. Crear la Orden (Cabecera)
+        // Crear la Orden 
         const newOrder = await Order.create({
             UserId: userId || null,         // Si es null, Sequelize lo deja pasar
             clientName: clientName || null, // Guardamos el nombre del físico
@@ -21,7 +21,7 @@ const createOrder = async (req, res) => {
             status: 'completed'
         });
 
-        // 3. Crear Detalles y RESTAR Stock (Esto sigue igual)
+        // Crear Detalles y RESTAR Stock
         for (const item of items) {
             await OrderItem.create({
                 OrderId: newOrder.id,

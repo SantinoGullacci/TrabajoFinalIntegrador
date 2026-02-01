@@ -1,17 +1,13 @@
-// src/types/models.ts
-
-// 1. USUARIO (Basado en User.js)
-// El ID es string porque en tu modelo usas UUIDV4
 export interface User {
   id: string; 
   name: string;
   email: string;
   role: 'admin' | 'client'; // Enum definido en el backend
   phone?: string;           // Es allowNull: true
-  securityAnswer?: string;  // No solemos enviarla al front, pero existe en el modelo
+  securityAnswer?: string;  
 }
 
-// 2. SERVICIO (Basado en Service.js)
+//  SERVICIO 
 export interface Service {
   id: number;
   name: string;
@@ -20,44 +16,44 @@ export interface Service {
   description?: string;     // Es allowNull: true
 }
 
-// 3. PRODUCTO (Basado en Product.js)
+//  PRODUCTO 
 export interface Product {
   id: number;
   name: string;
   price: number;
   stock: number;
   imageUrl?: string;
-  category?: string;        // Nuevos campos que agregaste
-  brand?: string;           // Nuevos campos que agregaste
+  category?: string;        
+  brand?: string;           
   description?: string;
 }
 
-// 4. TURNO / APPOINTMENT (Basado en Appointment.js)
+// TURNO 
 export interface Appointment {
   id: number;
-  date: string;             // Sequelize envía DATEONLY como string 'YYYY-MM-DD'
-  time: string;             // Sequelize envía TIME como string 'HH:mm:ss'
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'; //
-  clientName?: string;      // Opcional
+  date: string;             
+  time: string;             
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'; 
+  clientName?: string;      
   
-  // Claves foráneas (Sequelize las agrega automáticamente en la respuesta JSON)
+  // Claves foráneas 
   UserId?: string;
   ServiceId?: number;
 
-  // Relaciones (Cuando haces 'include' en el backend)
+  // Relaciones 
   User?: User;
   Service?: Service;
   
-  // Timestamps (Appointment tiene timestamps: true)
+  // Timestamps 
   createdAt?: string;
   updatedAt?: string;
 }
 
-// 5. PEDIDO / ORDER (Basado en Order.js)
+//  PEDIDO 
 export interface Order {
   id: number;
   total: number;
-  status: 'pending' | 'completed'; //
+  status: 'pending' | 'completed'; 
   date: string;
   clientName?: string;
   
@@ -66,19 +62,19 @@ export interface Order {
   User?: User;
 }
 
-// 6. ITEM DE PEDIDO (Basado en OrderItem.js)
+// ITEM DE PEDIDO 
 export interface OrderItem {
   id: number;
   quantity: number;
   price: number;            // Precio histórico
   ProductId?: number;
   OrderId?: number;
-  Product?: Product;        // Si incluyes el producto
+  Product?: Product;      
 }
 
-// 7. INFO DEL NEGOCIO (Basado en BusinessInfo.js)
+//INFO DEL NEGOCIO
 export interface BusinessInfo {
-  id?: number;              // Sequelize crea ID aunque no lo definas
+  id?: number;              
   name: string;
   description?: string;
   phone?: string;

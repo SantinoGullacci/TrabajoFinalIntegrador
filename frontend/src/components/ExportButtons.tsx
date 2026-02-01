@@ -5,15 +5,15 @@ import { procesarDatosParaReporte } from '../utils/reportUtils';
 
 interface Props {
   data: any[]; 
-  label?: string; // Para ponerle nombre al archivo (ej: "pendientes")
+  label?: string; // Para ponerle nombre al archivo 
 }
 
 export const ExportButtons = ({ data, label = "reporte" }: Props) => {
   
-  // 1. Si la lista está vacía, no mostramos los botones
+  // Si la lista está vacía, no mostramos los botones
   if (!data || data.length === 0) return null;
 
-  // 2. Procesamos los datos una sola vez aquí
+  // Procesamos los datos una sola vez
   const datosProcesados = procesarDatosParaReporte(data);
   const nombreArchivo = `${label}_${new Date().toLocaleDateString().replace(/\//g, '-')}`;
 

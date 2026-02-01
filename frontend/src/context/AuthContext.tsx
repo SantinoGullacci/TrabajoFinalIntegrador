@@ -13,7 +13,7 @@ interface AuthContextType {
   login: (token: string, userData: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
-  loading: boolean; // <--- NUEVO
+  loading: boolean; 
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // <--- Arranca Cargando
+  const [loading, setLoading] = useState(true); // Arranca Cargando
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
     }
-    setLoading(false); // <--- Terminamos de revisar, bajamos la bandera
+    setLoading(false); 
   }, []);
 
   const login = (newToken: string, userData: User) => {

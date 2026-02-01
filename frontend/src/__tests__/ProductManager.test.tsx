@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import ProductManager from '../components/ProductManager'; // Asegúrate de que la ruta sea correcta
+import ProductManager from '../components/ProductManager'; 
 
 // Datos falsos para la prueba
 const MOCK_PRODUCTS = [
@@ -10,7 +10,6 @@ const MOCK_PRODUCTS = [
 
 // Creamos el mock
 const fetchMock = vi.fn();
-// Usamos stubGlobal para reemplazar el fetch global sin errores de TS
 vi.stubGlobal('fetch', fetchMock);
 
 describe('ProductManager Component', () => {
@@ -25,7 +24,7 @@ describe('ProductManager Component', () => {
       json: async () => MOCK_PRODUCTS,
     });
 
-    // Mockeamos la función onUpdate (prop requerida)
+    // Mockeamos la función onUpdate 
     const mockOnUpdate = vi.fn();
     render(<ProductManager onUpdate={mockOnUpdate} />);
 

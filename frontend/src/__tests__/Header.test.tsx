@@ -27,11 +27,9 @@ describe('Header Component', () => {
       </BrowserRouter>
     );
 
-    // SOLUCIÓN: Buscamos la imagen por su texto alternativo (alt="Logo Mara Cabo")
-    // Esto es más robusto que buscar texto partido en varios spans
     expect(screen.getByAltText(/Logo Mara Cabo/i)).toBeInTheDocument();
 
-    // Opcional: También podemos verificar que aparezca la palabra "Estilista"
+    // verificar que aparezca la palabra "Estilista"
     expect(screen.getByText(/Estilista/i)).toBeInTheDocument();
   });
 });

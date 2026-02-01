@@ -8,7 +8,7 @@ interface Service {
   duration: number;
 }
 
-// 1. Recibimos onUpdate
+//  Recibimos onUpdate
 export default function ServiceManager({ onUpdate }: { onUpdate: () => void }) {
   const [services, setServices] = useState<Service[]>([]);
   const [formData, setFormData] = useState({ name: '', price: 0, duration: 0 });
@@ -47,7 +47,7 @@ export default function ServiceManager({ onUpdate }: { onUpdate: () => void }) {
         alert(editingId !== null ? '✅ Servicio actualizado' : '✅ Servicio creado');
         resetForm();
         fetchServices();
-        onUpdate(); // <--- 2. AVISAMOS AQUÍ (Al guardar)
+        onUpdate(); 
       } else {
         alert('Error al guardar');
       }
@@ -58,7 +58,7 @@ export default function ServiceManager({ onUpdate }: { onUpdate: () => void }) {
     if (!confirm('¿Seguro que quieres borrar este servicio?')) return;
     await fetch(`${API_URL}/services/${id}`, { method: 'DELETE' });
     fetchServices();
-    onUpdate(); // <--- 3. AVISAMOS AQUÍ (Al borrar)
+    onUpdate(); 
   };
 
   const startEditing = (service: Service) => {

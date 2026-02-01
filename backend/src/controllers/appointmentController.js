@@ -5,35 +5,30 @@ const createAppointment = async (req, res) => {
     try {
         const { date, time, UserId, ServiceId, clientName } = req.body;
 
-        // 1. Validar datos básicos
+        // Validar datos básicos
         if (!date || !time || !ServiceId) {
             return res.status(400).json({ error: "Faltan datos (fecha, hora o servicio)" });
         }
 
-        // --- INICIO DE VALIDACIONES NUEVAS ---
-
         const appointmentDate = new Date(`${date}T${time}`); // Creamos objeto Fecha
         const now = new Date();
-        const dayOfWeek = appointmentDate.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
-        const hour = parseInt(time.split(':')[0]); // Extraemos la hora (ej: "14:30" -> 14)
+        const dayOfWeek = appointmentDate.getDay(); 
+        const hour = parseInt(time.split(':')[0]); 
 
-        // Regla A: No permitir fechas pasadas
+        // No permitir fechas pasadas
         if (appointmentDate < now) {
             return res.status(400).json({ error: "Error: fecha ya pasada" });
         }
 
-        // Regla B: Cerrado Domingos (0) y Lunes (1)
+        // Cerrado Domingos y Lunes 
         if (dayOfWeek === 0 || dayOfWeek === 1) {
             return res.status(400).json({ error: "Error: La peluquería está cerrada Domingos y Lunes." });
         }
 
-        // Regla C: Horario de 9 a 18 hs
-        // (Si la hora es menor a 9 O mayor/igual a 18, rebota)
+        // Horario de 9 a 18 hs
         if (hour < 9 || hour >= 18) {
             return res.status(400).json({ error: "Error: Horario de atención: 09:00 a 18:00 hs." });
         }
-
-        // --- FIN DE VALIDACIONES NUEVAS ---
 
         // Validar cliente (registrado o físico)
         if (!UserId && !clientName) {
@@ -66,10 +61,9 @@ const getAppointments = async (req, res) => {
                 { model: User, attributes: ['name', 'email'] },
                 { model: Service, attributes: ['name', 'price', 'duration'] }
             ],
-            order: [['date', 'ASC'], ['time', 'ASC']] // De paso, los ordenamos por fecha
+            order: [['date', 'ASC'], ['time', 'ASC']] // los ordenamos por fecha
         };
 
-        // SI nos enviaron un ID, filtramos. SI NO, traemos todo.
         if (userId) {
             queryOptions.where = { UserId: userId };
         }
@@ -81,7 +75,6 @@ const getAppointments = async (req, res) => {
     }
 };
 
-// EDITAR TURNO (PUT) - CON LÓGICA DE CANCELACIÓN
 const updateAppointment = async (req, res) => {
     try {
         const { id } = req.params;
@@ -91,17 +84,16 @@ const updateAppointment = async (req, res) => {
         const appointment = await Appointment.findByPk(id);
         if (!appointment) return res.status(404).json({ error: "Turno no encontrado" });
 
-        // --- LÓGICA DE CANCELACIÓN (NUEVO) ---
         if (status === 'cancelled') {
-            // 1. Calculamos la fecha del turno
+            // Calculamos la fecha del turno
             const appointmentDate = new Date(`${appointment.date}T${appointment.time}`);
             const now = new Date();
             
-            // 2. Calculamos la diferencia en horas
+            // Calculamos la diferencia en horas
             const diffInMs = appointmentDate - now;
             const diffInHours = diffInMs / (1000 * 60 * 60);
 
-            // 3. Regla: Si falta menos de 24hs Y NO ES ADMIN, error.
+            // Si falta menos de 24hs Y NO ES ADMIN, error.
             if (diffInHours < 24 && requestingRole !== 'admin') {
                 return res.status(400).json({ error: "❌ Los clientes solo pueden cancelar con 24hs de anticipación." });
             }
@@ -118,7 +110,7 @@ const updateAppointment = async (req, res) => {
             return res.json({ message: "Estado actualizado", appointment });
         }
 
-        // --- VALIDACIONES DE EDICIÓN DE FECHA (Lo que ya tenías) ---
+        // --- VALIDACIONES DE EDICIÓN DE FECHA ---
         if (date || time) {
             const newDate = date || appointment.date;
             const newTime = time || appointment.time;

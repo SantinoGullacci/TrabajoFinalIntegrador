@@ -2,14 +2,13 @@ const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
   sequelize.define('BusinessInfo', {
-    // No hace falta definir ID, Sequelize lo crea solo
     name: {
       type: DataTypes.STRING,
       defaultValue: "Nombre de tu Barbería",
       allowNull: false,
     },
     description: {
-      type: DataTypes.TEXT, // TEXT permite textos largos
+      type: DataTypes.TEXT, 
       defaultValue: "Descripción por defecto...",
     },
     phone: {
@@ -25,6 +24,6 @@ module.exports = (sequelize) => {
       defaultValue: "Dirección del local",
     }
   }, {
-    timestamps: false // No necesitamos fecha de creación/edición para esto
+    timestamps: false 
   });
 };
