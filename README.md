@@ -190,6 +190,7 @@ Si desplegas la sección **"Mis Turnos"**, te encontrarás con tres opciones:
 
 ## Diseño de la arquitectura
 
+<img width="2555" height="1558" alt="mermaid-diagram-2026-02-01-182557" src="https://github.com/user-attachments/assets/b3084238-b4b8-431c-a2f1-16c4df2820f4" />
 
 
 ---
