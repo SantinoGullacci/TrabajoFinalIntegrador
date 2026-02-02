@@ -117,7 +117,9 @@ También consideramos importante aclarar que nuestro proyecto **ES compatible pa
 ## Colección en Postman
 
 `http://localhost:3001/appointments`
+
 `http://localhost:3001/login`
+
 `http://localhost:3001/services`
 
 *Para trabajar con Postman en la URL pública reemplazar `localhost:3001` por `trabajofinalintegrador.onrender.com`*
