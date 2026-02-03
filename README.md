@@ -112,7 +112,65 @@ Otras URLs útiles para trabajar con Postman:
 * **Local:** `GET` en `http://localhost:3001/users` (Para recibir la lista de usuarios creados).
 * **URL Pública:** `GET` en `https://trabajofinalintegrador.onrender.com/users` (Para recibir la lista de usuarios creados).
 
+* **Local:** `GET` en `http://localhost:3001/products` (Para recibir la lista de productos creados).
+* **URL Pública:** `GET` en `https://trabajofinalintegrador.onrender.com/products` (Para recibir la lista de productos creados).
+
+* **Local:** `POST` en `http://localhost:3001/products`
+* **URL Pública:** `POST` en `https://trabajofinalintegrador.onrender.com/products`
+
+Con este body:
+
+```json
+{
+    "name": "NOMBRE DEL PRODUCTO",
+    "price": PRECIO,
+    "stock": STOCK,
+    "category": "CATEGORIA",
+    "brand": "MARCA",
+    "description": "DESCRIPCIÓN",
+    "imageUrl": "URL DE IMAGEN DE REFERENCIA"
+  }
+
+```
+
+Para cargar productos via Postman.
+
+* **Local:** `GET` en `http://localhost:3001/servcies` (Para recibir la lista de servicios creados).
+* **URL Pública:** `GET` en `https://trabajofinalintegrador.onrender.com/services` (Para recibir la lista de servicios creados).
+
+* **Local:** `POST` en `http://localhost:3001/services`
+* **URL Pública:** `POST` en `https://trabajofinalintegrador.onrender.com/services`
+
+Con este body:
+
+```json
+{
+    "name": "NOMBRE DEL SERVICIO",
+    "price": PRECIO,
+    "duration": DURACIÓN EN MINUTOS,
+}
+
+```
+
+Para cargar servicios via Postman.
+
 También consideramos importante aclarar que nuestro proyecto **ES compatible para dispositivos móviles**. 
+
+## Colección en Postman
+
+`http://localhost:3001/users`
+
+`http://localhost:3001/products`
+
+`http://localhost:3001/appointments`
+
+`http://localhost:3001/register`
+
+`http://localhost:3001/login`
+
+`http://localhost:3001/services`
+
+*Para trabajar con Postman en la URL pública reemplazar `localhost:3001` por `trabajofinalintegrador.onrender.com`*
 
 ---
 
@@ -190,11 +248,10 @@ Si desplegas la sección **"Mis Turnos"**, te encontrarás con tres opciones:
 
 ## Diseño de la arquitectura
 
+<img width="2555" height="1558" alt="mermaid-diagram-2026-02-01-182557" src="https://github.com/user-attachments/assets/b3084238-b4b8-431c-a2f1-16c4df2820f4" />
 
 
 ---
-
-## Tecnologías, librerías y frameworks utilizados
 
 ## Tecnologías, librerías y frameworks utilizados
 
