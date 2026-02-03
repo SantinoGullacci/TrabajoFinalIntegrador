@@ -85,7 +85,7 @@ También podés registrarte como cliente de manera manual. Para convertir ese cl
 Realizar un `POST` a: `http://localhost:3001/register`
 
 **URL Pública:**
-Realizar un `POST` a: `https://trabajofinalintegrador.onrender.com/register`
+Realizar un `POST` a: `https://backend-peluqueria-7z7k.onrender.com/register`
 
 **Body (JSON):**
 
@@ -110,13 +110,13 @@ Realizar un `POST` a: `https://trabajofinalintegrador.onrender.com/register`
 Otras URLs útiles para trabajar con Postman:
 
 * **Local:** `GET` en `http://localhost:3001/users` (Para recibir la lista de usuarios creados).
-* **URL Pública:** `GET` en `https://trabajofinalintegrador.onrender.com/users` (Para recibir la lista de usuarios creados).
+* **URL Pública:** `GET` en `https://backend-peluqueria-7z7k.onrender.com/users` (Para recibir la lista de usuarios creados).
 
 * **Local:** `GET` en `http://localhost:3001/products` (Para recibir la lista de productos creados).
-* **URL Pública:** `GET` en `https://trabajofinalintegrador.onrender.com/products` (Para recibir la lista de productos creados).
+* **URL Pública:** `GET` en `https://backend-peluqueria-7z7k.onrender.com/products` (Para recibir la lista de productos creados).
 
 * **Local:** `POST` en `http://localhost:3001/products`
-* **URL Pública:** `POST` en `https://trabajofinalintegrador.onrender.com/products`
+* **URL Pública:** `POST` en `https://backend-peluqueria-7z7k.onrender.com/products`
 
 Con este body:
 
@@ -136,10 +136,10 @@ Con este body:
 Para cargar productos via Postman.
 
 * **Local:** `GET` en `http://localhost:3001/servcies` (Para recibir la lista de servicios creados).
-* **URL Pública:** `GET` en `https://trabajofinalintegrador.onrender.com/services` (Para recibir la lista de servicios creados).
+* **URL Pública:** `GET` en `https://backend-peluqueria-7z7k.onrender.com/services` (Para recibir la lista de servicios creados).
 
 * **Local:** `POST` en `http://localhost:3001/services`
-* **URL Pública:** `POST` en `https://trabajofinalintegrador.onrender.com/services`
+* **URL Pública:** `POST` en `https://backend-peluqueria-7z7k.onrender.com/services`
 
 Con este body:
 
@@ -170,7 +170,7 @@ También consideramos importante aclarar que nuestro proyecto **ES compatible pa
 
 `http://localhost:3001/services`
 
-*Para trabajar con Postman en la URL pública reemplazar `localhost:3001` por `trabajofinalintegrador.onrender.com`*
+*Para trabajar con Postman en la URL pública reemplazar `localhost:3001` por `backend-peluqueria-7z7k.onrender.com`*
 
 ---
 
